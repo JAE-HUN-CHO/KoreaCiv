@@ -1,0 +1,6 @@
+{
+  "name": "KoreaCiv — 대한민국 문명 지도",
+  "description": "대한민국 전역을 5km 육각 격자(Hex Grid)로 구성하고 공공통계 데이터를 문명(Civilization) 언어로 시각화한 인터랙티브 전략 지도 탐색기입니다.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
