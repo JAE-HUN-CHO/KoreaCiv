@@ -5,6 +5,8 @@ import type { LiveWorldMeta } from '../engine/hexGrid';
 import {
   batchGeocodeVWorld,
   fetchDataGoKrContainerByRegion,
+  fetchDataGoKrPortCargo,
+  fetchDataGoKrUniversityResearch,
   fetchKosisTimeseries,
   fetchSgisBoundaryOverlay,
   fetchSgisSubdistricts,
@@ -14,6 +16,8 @@ import {
   type ApiStatusResponse,
   type CustomMapPin,
   type DataGoKrContainerResponse,
+  type DataGoKrPortCargoResponse,
+  type DataGoKrUniversityResearchResponse,
   type GeocodedPlaceResult,
   type KosisSearchItem,
   type KosisTimeseriesResponse,
@@ -131,6 +135,12 @@ export const LiveApiPanel: React.FC<LiveApiPanelProps> = ({
   const [dataGoKrData, setDataGoKrData] = useState<DataGoKrContainerResponse | null>(null);
   const [dataGoKrLoading, setDataGoKrLoading] = useState(false);
   const [dataGoKrError, setDataGoKrError] = useState<string | null>(null);
+  const [portCargoData, setPortCargoData] = useState<DataGoKrPortCargoResponse | null>(null);
+  const [portCargoLoading, setPortCargoLoading] = useState(false);
+  const [portCargoError, setPortCargoError] = useState<string | null>(null);
+  const [univResearchData, setUnivResearchData] = useState<DataGoKrUniversityResearchResponse | null>(null);
+  const [univResearchLoading, setUnivResearchLoading] = useState(false);
+  const [univResearchError, setUnivResearchError] = useState<string | null>(null);
 
   // SGIS 조회 실행
   const handleFetchSgis = async (prov: ProvinceCode = sgisProvince, yr: string = sgisYear) => {
@@ -189,6 +199,34 @@ export const LiveApiPanel: React.FC<LiveApiPanelProps> = ({
       setDataGoKrError(err instanceof Error ? err.message : 'data.go.kr 조회에 실패했습니다.');
     } finally {
       setDataGoKrLoading(false);
+    }
+  };
+
+  // data.go.kr 항만공사별 실시간 화물 물동량(톤) 조회
+  const handleFetchPortCargo = async () => {
+    setPortCargoLoading(true);
+    setPortCargoError(null);
+    try {
+      const res = await fetchDataGoKrPortCargo();
+      setPortCargoData(res);
+    } catch (err) {
+      setPortCargoError(err instanceof Error ? err.message : '항만 물동량 조회에 실패했습니다.');
+    } finally {
+      setPortCargoLoading(false);
+    }
+  };
+
+  // data.go.kr 대학알리미 교원 1인당 교외 연구비 조회
+  const handleFetchUnivResearch = async () => {
+    setUnivResearchLoading(true);
+    setUnivResearchError(null);
+    try {
+      const res = await fetchDataGoKrUniversityResearch();
+      setUnivResearchData(res);
+    } catch (err) {
+      setUnivResearchError(err instanceof Error ? err.message : '대학알리미 조회에 실패했습니다.');
+    } finally {
+      setUnivResearchLoading(false);
     }
   };
 
@@ -273,6 +311,12 @@ export const LiveApiPanel: React.FC<LiveApiPanelProps> = ({
     }
     if (tab === 'datagokr' && apiStatus?.dataGoKr && !dataGoKrData && !dataGoKrLoading) {
       void handleFetchDataGoKr();
+    }
+    if (tab === 'datagokr' && apiStatus?.dataGoKr && !portCargoData && !portCargoLoading) {
+      void handleFetchPortCargo();
+    }
+    if (tab === 'datagokr' && apiStatus?.dataGoKr && !univResearchData && !univResearchLoading) {
+      void handleFetchUnivResearch();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab, apiStatus]);
@@ -760,6 +804,100 @@ export const LiveApiPanel: React.FC<LiveApiPanelProps> = ({
                   </div>
                 </div>
               )}
+
+              {/* 항만공사별 실시간 화물 물동량(톤) */}
+              <div className="border-t border-[#1E2F42] pt-4">
+                <h3 className="mb-2 text-xs font-semibold text-[#F0DFB3]">
+                  항만공사별 실시간 화물 물동량
+                </h3>
+                <div className="mb-2 rounded border border-[#2C4259] bg-[#0F1D2C] p-3 text-[11px] text-[#9BB0C4]">
+                  부산항만공사·인천항만공사가 직접 공개하는 <strong className="text-[#ECEAE2]">총 화물량(톤)</strong> 기준 실적입니다. 지도 시설의 "컨테이너(TEU)" 수치와는 단위가 달라 지도 값을 덮어쓰지 않고 참고 자료로만 보여줍니다.
+                </div>
+                {portCargoError && (
+                  <div className="rounded border border-[#5C2B2B] bg-[#211317] px-3.5 py-2.5 text-[#F0A39A]">
+                    {portCargoError}
+                  </div>
+                )}
+                {portCargoLoading && !portCargoData && (
+                  <div className="flex items-center gap-2 text-xs text-[#8FA4B8]">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    <span>불러오는 중...</span>
+                  </div>
+                )}
+                {portCargoData && (
+                  <div className="max-h-48 overflow-auto border-y border-[#1E2F42]">
+                    <table className="w-full border-collapse text-left">
+                      <thead className="sticky top-0 bg-[#101E2E] text-[11px] text-[#8FA4B8]">
+                        <tr className="border-b border-[#223449]">
+                          <th className="px-3 py-2 font-medium">항만</th>
+                          <th className="font-mono-num px-2.5 py-2 text-right font-medium">연도</th>
+                          <th className="font-mono-num px-2.5 py-2 text-right font-medium">총 화물량(톤)</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#172536]">
+                        {portCargoData.ports.map((p) => (
+                          <tr key={p.id} className="hover:bg-[#142334]">
+                            <td className="px-3 py-1.5 font-medium whitespace-nowrap text-[#ECEAE2]">{p.name}</td>
+                            <td className="font-mono-num px-2.5 py-1.5 text-right whitespace-nowrap text-[#CFDCE8]">
+                              {p.year ?? '—'}
+                            </td>
+                            <td className="font-mono-num px-2.5 py-1.5 text-right whitespace-nowrap text-[#CFDCE8]">
+                              {p.totalTons.toLocaleString('ko-KR')}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              {/* 대학알리미: 교원 1인당 교외 연구비 */}
+              <div className="border-t border-[#1E2F42] pt-4">
+                <h3 className="mb-2 text-xs font-semibold text-[#F0DFB3]">
+                  대학알리미 전임교원 1인당 교외 연구비
+                </h3>
+                <div className="mb-2 rounded border border-[#2C4259] bg-[#0F1D2C] p-3 text-[11px] text-[#9BB0C4]">
+                  대학알리미 학교아이디(schlId)를 조회해 지도에 표시된 24개 대학에 매칭했습니다. <strong className="text-[#ECEAE2]">"교원 1인당"</strong> 금액이라 지도의 "연간 총 연구비"(억원/년)와는 단위가 달라 지도 값을 덮어쓰지 않습니다.
+                </div>
+                {univResearchError && (
+                  <div className="rounded border border-[#5C2B2B] bg-[#211317] px-3.5 py-2.5 text-[#F0A39A]">
+                    {univResearchError}
+                  </div>
+                )}
+                {univResearchLoading && !univResearchData && (
+                  <div className="flex items-center gap-2 text-xs text-[#8FA4B8]">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    <span>불러오는 중... (24개 대학, 시간이 좀 걸릴 수 있음)</span>
+                  </div>
+                )}
+                {univResearchData && (
+                  <div className="max-h-64 overflow-auto border-y border-[#1E2F42]">
+                    <table className="w-full border-collapse text-left">
+                      <thead className="sticky top-0 bg-[#101E2E] text-[11px] text-[#8FA4B8]">
+                        <tr className="border-b border-[#223449]">
+                          <th className="px-3 py-2 font-medium">대학</th>
+                          <th className="font-mono-num px-2.5 py-2 text-right font-medium">
+                            {univResearchData.year}년 교원 1인당 교외연구비(만원)
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#172536]">
+                        {[...univResearchData.universities]
+                          .sort((a, b) => (b.grantPerFaculty10kKrw ?? -1) - (a.grantPerFaculty10kKrw ?? -1))
+                          .map((u) => (
+                            <tr key={u.id} className="hover:bg-[#142334]">
+                              <td className="px-3 py-1.5 font-medium whitespace-nowrap text-[#ECEAE2]">{u.name}</td>
+                              <td className="font-mono-num px-2.5 py-1.5 text-right whitespace-nowrap text-[#CFDCE8]">
+                                {u.grantPerFaculty10kKrw != null ? u.grantPerFaculty10kKrw.toLocaleString('ko-KR') : '—'}
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 

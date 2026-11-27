@@ -33,6 +33,19 @@ export interface DataGoKrContainerResponse {
   rows: DataGoKrContainerRegion[];
 }
 
+export interface DataGoKrPortCargoItem {
+  id: string;
+  name: string;
+  year: number | null;
+  totalTons: number;
+}
+
+export interface DataGoKrPortCargoResponse {
+  source: string;
+  note: string;
+  ports: DataGoKrPortCargoItem[];
+}
+
 export interface SgisSubdistrictItem {
   admCd: string;
   admNm: string;
@@ -534,4 +547,28 @@ export function fetchDataGoKrContainerByRegion(year?: string): Promise<DataGoKrC
   return fetchJson<DataGoKrContainerResponse>(
     `/api/datagokr/container-by-region${qs ? `?${qs}` : ''}`
   );
+}
+
+export function fetchDataGoKrPortCargo(): Promise<DataGoKrPortCargoResponse> {
+  if (IS_STATIC_DEPLOY) return staticUnsupported();
+  return fetchJson<DataGoKrPortCargoResponse>('/api/datagokr/port-cargo');
+}
+
+export interface DataGoKrUniversityResearchItem {
+  id: string;
+  name: string;
+  schlId: string | null;
+  grantPerFaculty10kKrw: number | null;
+}
+
+export interface DataGoKrUniversityResearchResponse {
+  source: string;
+  note: string;
+  year: string;
+  universities: DataGoKrUniversityResearchItem[];
+}
+
+export function fetchDataGoKrUniversityResearch(): Promise<DataGoKrUniversityResearchResponse> {
+  if (IS_STATIC_DEPLOY) return staticUnsupported();
+  return fetchJson<DataGoKrUniversityResearchResponse>('/api/datagokr/university-research');
 }
