@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Maximize2, Minus, Plus } from 'lucide-react';
 import type {
   FacilityPoint,
@@ -26,11 +26,6 @@ import { HexMapCanvas, type CameraTarget } from './components/HexMapCanvas';
 import { LensSidebar } from './components/LensSidebar';
 import { CityViewDrawer } from './components/CityViewDrawer';
 import { HoverTooltipCard } from './components/HoverTooltipCard';
-import { AdvisorsModal } from './components/AdvisorsModal';
-import { ExplorerDrawer } from './components/ExplorerDrawer';
-import { WondersPanel } from './components/WondersPanel';
-import { SourcesModal } from './components/SourcesModal';
-import { LiveApiPanel } from './components/LiveApiPanel';
 import {
   fetchApiStatus,
   fetchLiveBootstrap,
@@ -41,6 +36,13 @@ import {
   type SgisBoundaryOverlay,
   type SgisHistoryResponse,
 } from './services/publicApis';
+
+// 탭을 열 때만 필요한 패널은 별도 청크로 분리해 첫 로딩 JS를 줄임
+const AdvisorsModal = lazy(() => import('./components/AdvisorsModal').then((m) => ({ default: m.AdvisorsModal })));
+const ExplorerDrawer = lazy(() => import('./components/ExplorerDrawer').then((m) => ({ default: m.ExplorerDrawer })));
+const WondersPanel = lazy(() => import('./components/WondersPanel').then((m) => ({ default: m.WondersPanel })));
+const SourcesModal = lazy(() => import('./components/SourcesModal').then((m) => ({ default: m.SourcesModal })));
+const LiveApiPanel = lazy(() => import('./components/LiveApiPanel').then((m) => ({ default: m.LiveApiPanel })));
 
 const REGION_PRESETS: { id: string; label: string; lat: number; lon: number; zoom: number }[] = [
   { id: 'all', label: '전국', lat: 35.85, lon: 127.75, zoom: 1.28 },
@@ -684,69 +686,79 @@ export default function App() {
 
         {/* 자문관 모달 (9명의 전략 자문관) */}
         {activeTab === 'advisors' && (
-          <AdvisorsModal
-            cities={world.cities}
-            facilities={world.facilities}
-            onClose={() => setActiveTab('map')}
-            onJumpToCity={(cityId, lens) => handleJumpToCity(cityId, lens)}
-            onJumpToFacility={handleJumpToFacility}
-          />
+          <Suspense fallback={null}>
+            <AdvisorsModal
+              cities={world.cities}
+              facilities={world.facilities}
+              onClose={() => setActiveTab('map')}
+              onJumpToCity={(cityId, lens) => handleJumpToCity(cityId, lens)}
+              onJumpToFacility={handleJumpToFacility}
+            />
+          </Suspense>
         )}
 
         {/* 탐색기 (산점도 + 표, 지도 실시간 연동) */}
         {activeTab === 'explorer' && (
-          <ExplorerDrawer
-            cities={world.cities}
-            selectedCityId={selectedCityId}
-            onSelectCityOnMap={(cityId) => {
-              const city = world.cityMap.get(cityId);
-              if (!city) return;
-              setSelectedCityId(city.id);
-              setSelectedHexId(city.centerHexId ?? null);
-              // 탐색기 하단 패널에 가리지 않도록 지도를 살짝 위로 올려 중심 배치
-              flyTo(city.centerX, city.centerY + 45, 2.8);
-            }}
-            onHoverCityOnMap={setExplorerHoveredCityId}
-            onApplyLens={(lens) => setActiveLens(lens)}
-            onClose={() => {
-              setExplorerHoveredCityId(null);
-              setActiveTab('map');
-            }}
-          />
+          <Suspense fallback={null}>
+            <ExplorerDrawer
+              cities={world.cities}
+              selectedCityId={selectedCityId}
+              onSelectCityOnMap={(cityId) => {
+                const city = world.cityMap.get(cityId);
+                if (!city) return;
+                setSelectedCityId(city.id);
+                setSelectedHexId(city.centerHexId ?? null);
+                // 탐색기 하단 패널에 가리지 않도록 지도를 살짝 위로 올려 중심 배치
+                flyTo(city.centerX, city.centerY + 45, 2.8);
+              }}
+              onHoverCityOnMap={setExplorerHoveredCityId}
+              onApplyLens={(lens) => setActiveLens(lens)}
+              onClose={() => {
+                setExplorerHoveredCityId(null);
+                setActiveTab('map');
+              }}
+            />
+          </Suspense>
         )}
 
         {/* 불가사의 패널 */}
         {activeTab === 'wonders' && (
-          <WondersPanel
-            facilities={world.facilities}
-            onJumpToFacility={handleJumpToFacility}
-            onClose={() => setActiveTab('map')}
-          />
+          <Suspense fallback={null}>
+            <WondersPanel
+              facilities={world.facilities}
+              onJumpToFacility={handleJumpToFacility}
+              onClose={() => setActiveTab('map')}
+            />
+          </Suspense>
         )}
 
         {/* 실시간 공공 API 패널 (SGIS · KOSIS · VWorld) */}
         {activeTab === 'live_api' && (
-          <LiveApiPanel
-            apiStatus={apiStatus}
-            liveMeta={world.liveMeta}
-            liveLoading={liveLoading}
-            onRefreshLiveWorld={() => void loadLiveWorld(true)}
-            activeSgisOverlay={sgisOverlay}
-            customPins={customPins}
-            onApplySgisOverlay={handleApplySgisOverlay}
-            onPinPlace={handlePinPlace}
-            onPinBatchPlaces={handlePinBatchPlaces}
-            onClearCustomPins={() => setCustomPins([])}
-            onClose={() => setActiveTab('map')}
-          />
+          <Suspense fallback={null}>
+            <LiveApiPanel
+              apiStatus={apiStatus}
+              liveMeta={world.liveMeta}
+              liveLoading={liveLoading}
+              onRefreshLiveWorld={() => void loadLiveWorld(true)}
+              activeSgisOverlay={sgisOverlay}
+              customPins={customPins}
+              onApplySgisOverlay={handleApplySgisOverlay}
+              onPinPlace={handlePinPlace}
+              onPinBatchPlaces={handlePinBatchPlaces}
+              onClearCustomPins={() => setCustomPins([])}
+              onClose={() => setActiveTab('map')}
+            />
+          </Suspense>
         )}
 
         {/* 출처 및 규칙 모달 ("?") */}
         {sourcesOpen && (
-          <SourcesModal
-            stats={world.stats}
-            onClose={() => setSourcesOpen(false)}
-          />
+          <Suspense fallback={null}>
+            <SourcesModal
+              stats={world.stats}
+              onClose={() => setSourcesOpen(false)}
+            />
+          </Suspense>
         )}
       </main>
     </div>
