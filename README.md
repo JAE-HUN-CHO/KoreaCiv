@@ -119,7 +119,7 @@ python3 pipeline/geocode_check_vworld.py data/raw/facilities.json
 python3 pipeline/geocode_merge_reports.py
 ```
 
-`src/data/generated/universities.json`(기존 24개 외 318개 대학)은 저장소에 커밋돼 있어 평소엔 다시 만들 필요가 없습니다. 대학알리미 공시가 갱신됐을 때만 다시 받습니다(`DATA_GO_KR_SERVICE_KEY`, `VWORLD_API_KEY` 필요, 약 2분).
+`src/data/generated/universities.json`(기존 24개 외 276개 대학)은 저장소에 커밋돼 있어 평소엔 다시 만들 필요가 없습니다. 대학알리미 공시가 갱신됐을 때만 다시 받습니다(`DATA_GO_KR_SERVICE_KEY`, `VWORLD_API_KEY` 필요, 약 2분).
 
 ```bash
 npx tsx pipeline/fetch_universities.ts
@@ -135,7 +135,7 @@ pipeline/population.py    격자 인구를 칸별로 집계 (Python)
 pipeline/geocode_check.py        시설 좌표를 Nominatim으로 검증 (Python)
 pipeline/geocode_check_vworld.py 시설 좌표를 VWorld로 검증 (Python)
 pipeline/geocode_merge_reports.py Nominatim·VWorld 검증 합산 + 대형 시설 보정
-pipeline/fetch_universities.ts   대학알리미 학교코드로 신규 대학 318곳 지오코딩 (TypeScript)
+pipeline/fetch_universities.ts   대학알리미 학교코드로 신규 대학 276곳 지오코딩 (TypeScript)
 data/manifest.json        원자료 출처·생성 시각
 data/geocode_*            시설 좌표 검증 결과
 src/

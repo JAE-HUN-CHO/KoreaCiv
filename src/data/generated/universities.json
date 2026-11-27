@@ -42,20 +42,6 @@
     "sourceNote": "대학알리미 (data.go.kr, 2024) · 교원 1인당 수치 — 지도의 상위 24개 대학(연간 총 연구비)과 단위가 다름"
   },
   {
-    "id": "univ_schl0000215",
-    "name": "가톨릭꽃동네대학교",
-    "type": "university",
-    "cityId": "sejong",
-    "province": "sejong",
-    "lat": 36.5221,
-    "lon": 127.4012,
-    "metricValue": 5360.38,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr, 2024) · 교원 1인당 수치 — 지도의 상위 24개 대학(연간 총 연구비)과 단위가 다름"
-  },
-  {
     "id": "univ_schl0000046",
     "name": "가톨릭대학교",
     "type": "university",
@@ -112,20 +98,6 @@
     "sourceNote": "대학알리미 (data.go.kr, 2024) · 교원 1인당 수치 — 지도의 상위 24개 대학(연간 총 연구비)과 단위가 다름"
   },
   {
-    "id": "univ_schl0000433",
-    "name": "강동대학교",
-    "type": "university",
-    "cityId": "yeoju",
-    "province": "gyeonggi",
-    "lat": 37.1414,
-    "lon": 127.6486,
-    "metricValue": 0,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "전문대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
-  },
-  {
     "id": "univ_schl0000514",
     "name": "강릉영동대학교",
     "type": "university",
@@ -137,20 +109,6 @@
     "metricUnit": "만원/교원",
     "metricLabel": "전임교원 1인당 교외연구비",
     "subCategory": "전문대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr, 2024) · 교원 1인당 수치 — 지도의 상위 24개 대학(연간 총 연구비)과 단위가 다름"
-  },
-  {
-    "id": "univ_schl0000079",
-    "name": "강서대학교",
-    "type": "university",
-    "cityId": "gwangmyeong",
-    "province": "gyeonggi",
-    "lat": 37.5487,
-    "lon": 126.8542,
-    "metricValue": 8685.93,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 사립",
     "sourceNote": "대학알리미 (data.go.kr, 2024) · 교원 1인당 수치 — 지도의 상위 24개 대학(연간 총 연구비)과 단위가 다름"
   },
   {
@@ -193,34 +151,6 @@
     "metricUnit": "만원/교원",
     "metricLabel": "전임교원 1인당 교외연구비",
     "subCategory": "전문대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr, 2024) · 교원 1인당 수치 — 지도의 상위 24개 대학(연간 총 연구비)과 단위가 다름"
-  },
-  {
-    "id": "univ_schl0000052",
-    "name": "건국대학교",
-    "type": "university",
-    "cityId": "guri",
-    "province": "gyeonggi",
-    "lat": 37.5439,
-    "lon": 127.076,
-    "metricValue": 149526.4,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr, 2024) · 교원 1인당 수치 — 지도의 상위 24개 대학(연간 총 연구비)과 단위가 다름"
-  },
-  {
-    "id": "univ_schl0000054",
-    "name": "건양대학교",
-    "type": "university",
-    "cityId": "daejeon",
-    "province": "daejeon",
-    "lat": 36.3066,
-    "lon": 127.3426,
-    "metricValue": 26403.12,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 사립",
     "sourceNote": "대학알리미 (data.go.kr, 2024) · 교원 1인당 수치 — 지도의 상위 24개 대학(연간 총 연구비)과 단위가 다름"
   },
   {
@@ -448,34 +378,6 @@
     "sourceNote": "대학알리미 (data.go.kr, 2024) · 교원 1인당 수치 — 지도의 상위 24개 대학(연간 총 연구비)과 단위가 다름"
   },
   {
-    "id": "univ_schl0000256",
-    "name": "경인교육대학교",
-    "type": "university",
-    "cityId": "anyang",
-    "province": "gyeonggi",
-    "lat": 37.4336,
-    "lon": 126.9172,
-    "metricValue": 29444.07,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 국립",
-    "sourceNote": "대학알리미 (data.go.kr, 2024) · 교원 1인당 수치 — 지도의 상위 24개 대학(연간 총 연구비)과 단위가 다름"
-  },
-  {
-    "id": "univ_schl0000422",
-    "name": "경인여자대학교",
-    "type": "university",
-    "cityId": "bucheon",
-    "province": "gyeonggi",
-    "lat": 37.5485,
-    "lon": 126.7228,
-    "metricValue": 2240.28,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "전문대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr, 2024) · 교원 1인당 수치 — 지도의 상위 24개 대학(연간 총 연구비)과 단위가 다름"
-  },
-  {
     "id": "univ_schl0000064",
     "name": "경일대학교",
     "type": "university",
@@ -484,20 +386,6 @@
     "lat": 35.9073,
     "lon": 128.8011,
     "metricValue": 15124.02,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr, 2024) · 교원 1인당 수치 — 지도의 상위 24개 대학(연간 총 연구비)과 단위가 다름"
-  },
-  {
-    "id": "univ_schl0000068",
-    "name": "계명대학교",
-    "type": "university",
-    "cityId": "gyeongju",
-    "province": "gyeongbuk",
-    "lat": 35.8458,
-    "lon": 129.2091,
-    "metricValue": 48970.2,
     "metricUnit": "만원/교원",
     "metricLabel": "전임교원 1인당 교외연구비",
     "subCategory": "대학 · 사립",
@@ -586,20 +474,6 @@
     "metricLabel": "전임교원 1인당 교외연구비",
     "subCategory": "전문대학 · 사립",
     "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
-  },
-  {
-    "id": "univ_schl0000074",
-    "name": "광운대학교",
-    "type": "university",
-    "cityId": "guri",
-    "province": "gyeonggi",
-    "lat": 37.6198,
-    "lon": 127.0584,
-    "metricValue": 157066.78,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr, 2024) · 교원 1인당 수치 — 지도의 상위 24개 대학(연간 총 연구비)과 단위가 다름"
   },
   {
     "id": "univ_schl0000075",
@@ -826,20 +700,6 @@
     "sourceNote": "대학알리미 (data.go.kr, 2024) · 교원 1인당 수치 — 지도의 상위 24개 대학(연간 총 연구비)과 단위가 다름"
   },
   {
-    "id": "univ_schl0000034",
-    "name": "국립한국교통대학교",
-    "type": "university",
-    "cityId": "uiwang",
-    "province": "gyeonggi",
-    "lat": 37.3146,
-    "lon": 126.9539,
-    "metricValue": 106018.82,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 국립",
-    "sourceNote": "대학알리미 (data.go.kr, 2024) · 교원 1인당 수치 — 지도의 상위 24개 대학(연간 총 연구비)과 단위가 다름"
-  },
-  {
     "id": "univ_schl0000033",
     "name": "국립한국해양대학교",
     "type": "university",
@@ -861,11 +721,11 @@
     "province": "daejeon",
     "lat": 36.3507,
     "lon": 127.3007,
-    "metricValue": 96630.06,
+    "metricValue": 0,
     "metricUnit": "만원/교원",
     "metricLabel": "전임교원 1인당 교외연구비",
     "subCategory": "대학 · 국립",
-    "sourceNote": "대학알리미 (data.go.kr, 2024) · 교원 1인당 수치 — 지도의 상위 24개 대학(연간 총 연구비)과 단위가 다름"
+    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
   },
   {
     "id": "univ_schl0000078",
@@ -875,11 +735,11 @@
     "province": "seoul",
     "lat": 37.6103,
     "lon": 126.9985,
-    "metricValue": 115905.66,
+    "metricValue": 0,
     "metricUnit": "만원/교원",
     "metricLabel": "전임교원 1인당 교외연구비",
     "subCategory": "대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr, 2024) · 교원 1인당 수치 — 지도의 상위 24개 대학(연간 총 연구비)과 단위가 다름"
+    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
   },
   {
     "id": "univ_schl0000549",
@@ -903,11 +763,11 @@
     "province": "jeonbuk",
     "lat": 35.97,
     "lon": 126.7604,
-    "metricValue": 3624.75,
+    "metricValue": 0,
     "metricUnit": "만원/교원",
     "metricLabel": "전임교원 1인당 교외연구비",
     "subCategory": "전문대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr, 2024) · 교원 1인당 수치 — 지도의 상위 24개 대학(연간 총 연구비)과 단위가 다름"
+    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
   },
   {
     "id": "univ_schl0000432",
@@ -924,20 +784,6 @@
     "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
   },
   {
-    "id": "univ_schl0000080",
-    "name": "극동대학교",
-    "type": "university",
-    "cityId": "yeoju",
-    "province": "gyeonggi",
-    "lat": 37.1276,
-    "lon": 127.643,
-    "metricValue": 10153.3,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr, 2024) · 교원 1인당 수치 — 지도의 상위 24개 대학(연간 총 연구비)과 단위가 다름"
-  },
-  {
     "id": "univ_schl0000224",
     "name": "금강대학교",
     "type": "university",
@@ -945,11 +791,11 @@
     "province": "chungnam",
     "lat": 36.3058,
     "lon": 127.1955,
-    "metricValue": 2116.67,
+    "metricValue": 0,
     "metricUnit": "만원/교원",
     "metricLabel": "전임교원 1인당 교외연구비",
     "subCategory": "대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr, 2024) · 교원 1인당 수치 — 지도의 상위 24개 대학(연간 총 연구비)과 단위가 다름"
+    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
   },
   {
     "id": "univ_schl0002972",
@@ -973,11 +819,11 @@
     "province": "gyeongbuk",
     "lat": 36.1396,
     "lon": 128.0805,
-    "metricValue": 9840.35,
+    "metricValue": 0,
     "metricUnit": "만원/교원",
     "metricLabel": "전임교원 1인당 교외연구비",
     "subCategory": "대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr, 2024) · 교원 1인당 수치 — 지도의 상위 24개 대학(연간 총 연구비)과 단위가 다름"
+    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
   },
   {
     "id": "univ_schl0000440",
@@ -1015,11 +861,11 @@
     "province": "chungnam",
     "lat": 36.7962,
     "lon": 127.1196,
-    "metricValue": 11794.45,
+    "metricValue": 0,
     "metricUnit": "만원/교원",
     "metricLabel": "전임교원 1인당 교외연구비",
     "subCategory": "대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr, 2024) · 교원 1인당 수치 — 지도의 상위 24개 대학(연간 총 연구비)과 단위가 다름"
+    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
   },
   {
     "id": "univ_schl0000435",
@@ -1043,25 +889,11 @@
     "province": "gwangju",
     "lat": 35.2065,
     "lon": 126.8403,
-    "metricValue": 5926.07,
+    "metricValue": 0,
     "metricUnit": "만원/교원",
     "metricLabel": "전임교원 1인당 교외연구비",
     "subCategory": "대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr, 2024) · 교원 1인당 수치 — 지도의 상위 24개 대학(연간 총 연구비)과 단위가 다름"
-  },
-  {
-    "id": "univ_schl0000245",
-    "name": "남서울대학교",
-    "type": "university",
-    "cityId": "pyeongtaek",
-    "province": "gyeonggi",
-    "lat": 36.9095,
-    "lon": 127.1447,
-    "metricValue": 18442.76,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr, 2024) · 교원 1인당 수치 — 지도의 상위 24개 대학(연간 총 연구비)과 단위가 다름"
+    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
   },
   {
     "id": "univ_schl0000441",
@@ -1071,11 +903,11 @@
     "province": "gyeonggi",
     "lat": 37.6593,
     "lon": 126.8727,
-    "metricValue": 9307.69,
+    "metricValue": 0,
     "metricUnit": "만원/교원",
     "metricLabel": "전임교원 1인당 교외연구비",
     "subCategory": "전문대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr, 2024) · 교원 1인당 수치 — 지도의 상위 24개 대학(연간 총 연구비)과 단위가 다름"
+    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
   },
   {
     "id": "univ_schl0000082",
@@ -1085,24 +917,10 @@
     "province": "gyeonggi",
     "lat": 37.3207,
     "lon": 127.1277,
-    "metricValue": 69460.44,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr, 2024) · 교원 1인당 수치 — 지도의 상위 24개 대학(연간 총 연구비)과 단위가 다름"
-  },
-  {
-    "id": "univ_schl0000442",
-    "name": "대경대학교",
-    "type": "university",
-    "cityId": "namyangju",
-    "province": "gyeonggi",
-    "lat": 37.748,
-    "lon": 127.2389,
     "metricValue": 0,
     "metricUnit": "만원/교원",
     "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "전문대학 · 사립",
+    "subCategory": "대학 · 사립",
     "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
   },
   {
@@ -1316,20 +1134,6 @@
     "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
   },
   {
-    "id": "univ_schl0000094",
-    "name": "대전가톨릭대학교",
-    "type": "university",
-    "cityId": "cheonan",
-    "province": "chungnam",
-    "lat": 36.655,
-    "lon": 127.1968,
-    "metricValue": 0,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
-  },
-  {
     "id": "univ_schl0000453",
     "name": "대전과학기술대학교",
     "type": "university",
@@ -1393,20 +1197,6 @@
     "province": "gyeonggi",
     "lat": 37.8734,
     "lon": 127.1574,
-    "metricValue": 0,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
-  },
-  {
-    "id": "univ_schl0000099",
-    "name": "덕성여자대학교",
-    "type": "university",
-    "cityId": "uijeongbu",
-    "province": "gyeonggi",
-    "lat": 37.6494,
-    "lon": 127.0217,
     "metricValue": 0,
     "metricUnit": "만원/교원",
     "metricLabel": "전임교원 1인당 교외연구비",
@@ -1575,34 +1365,6 @@
     "province": "jeonnam",
     "lat": 34.7303,
     "lon": 126.5679,
-    "metricValue": 0,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "전문대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
-  },
-  {
-    "id": "univ_schl0000106",
-    "name": "동양대학교",
-    "type": "university",
-    "cityId": "dongducheon",
-    "province": "gyeonggi",
-    "lat": 37.9341,
-    "lon": 127.0552,
-    "metricValue": 0,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
-  },
-  {
-    "id": "univ_schl0000463",
-    "name": "동양미래대학교",
-    "type": "university",
-    "cityId": "gwangmyeong",
-    "province": "gyeonggi",
-    "lat": 37.5009,
-    "lon": 126.8674,
     "metricValue": 0,
     "metricUnit": "만원/교원",
     "metricLabel": "전임교원 1인당 교외연구비",
@@ -1834,20 +1596,6 @@
     "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
   },
   {
-    "id": "univ_schl0000178",
-    "name": "백석대학교",
-    "type": "university",
-    "cityId": "gwacheon",
-    "province": "gyeonggi",
-    "lat": 37.4808,
-    "lon": 126.9968,
-    "metricValue": 0,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
-  },
-  {
     "id": "univ_schl0000543",
     "name": "백석문화대학교",
     "type": "university",
@@ -1974,20 +1722,6 @@
     "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
   },
   {
-    "id": "univ_schl0000115",
-    "name": "부산외국어대학교",
-    "type": "university",
-    "cityId": "yangsan",
-    "province": "gyeongnam",
-    "lat": 35.267,
-    "lon": 129.079,
-    "metricValue": 0,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
-  },
-  {
     "id": "univ_schl0000222",
     "name": "부산장신대학교",
     "type": "university",
@@ -2009,34 +1743,6 @@
     "province": "gyeonggi",
     "lat": 37.4636,
     "lon": 126.8031,
-    "metricValue": 0,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "전문대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
-  },
-  {
-    "id": "univ_schl0000116",
-    "name": "삼육대학교",
-    "type": "university",
-    "cityId": "guri",
-    "province": "gyeonggi",
-    "lat": 37.643,
-    "lon": 127.1043,
-    "metricValue": 0,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
-  },
-  {
-    "id": "univ_schl0000483",
-    "name": "삼육보건대학교",
-    "type": "university",
-    "cityId": "guri",
-    "province": "gyeonggi",
-    "lat": 37.589,
-    "lon": 127.0657,
     "metricValue": 0,
     "metricUnit": "만원/교원",
     "metricLabel": "전임교원 1인당 교외연구비",
@@ -2156,34 +1862,6 @@
     "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
   },
   {
-    "id": "univ_schl0000036",
-    "name": "서울과학기술대학교",
-    "type": "university",
-    "cityId": "guri",
-    "province": "gyeonggi",
-    "lat": 37.6316,
-    "lon": 127.0784,
-    "metricValue": 0,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 국립",
-    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
-  },
-  {
-    "id": "univ_schl0000255",
-    "name": "서울교육대학교",
-    "type": "university",
-    "cityId": "gwacheon",
-    "province": "gyeonggi",
-    "lat": 37.4904,
-    "lon": 127.0169,
-    "metricValue": 0,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 국립",
-    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
-  },
-  {
     "id": "univ_schl0000098",
     "name": "서울기독대학교",
     "type": "university",
@@ -2240,20 +1918,6 @@
     "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
   },
   {
-    "id": "univ_schl0000126",
-    "name": "서울여자대학교",
-    "type": "university",
-    "cityId": "guri",
-    "province": "gyeonggi",
-    "lat": 37.628,
-    "lon": 127.0904,
-    "metricValue": 0,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
-  },
-  {
     "id": "univ_schl0000489",
     "name": "서울예술대학교",
     "type": "university",
@@ -2282,20 +1946,6 @@
     "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
   },
   {
-    "id": "univ_schl0000205",
-    "name": "서울한영대학교",
-    "type": "university",
-    "cityId": "gwangmyeong",
-    "province": "gyeonggi",
-    "lat": 37.4964,
-    "lon": 126.8515,
-    "metricValue": 0,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
-  },
-  {
     "id": "univ_schl0000128",
     "name": "서원대학교",
     "type": "university",
@@ -2307,20 +1957,6 @@
     "metricUnit": "만원/교원",
     "metricLabel": "전임교원 1인당 교외연구비",
     "subCategory": "대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
-  },
-  {
-    "id": "univ_schl0000490",
-    "name": "서일대학교",
-    "type": "university",
-    "cityId": "namyangju",
-    "province": "gyeonggi",
-    "lat": 37.7042,
-    "lon": 127.2007,
-    "metricValue": 0,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "전문대학 · 사립",
     "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
   },
   {
@@ -2394,20 +2030,6 @@
     "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
   },
   {
-    "id": "univ_schl0000132",
-    "name": "성공회대학교",
-    "type": "university",
-    "cityId": "gwangmyeong",
-    "province": "gyeonggi",
-    "lat": 37.4878,
-    "lon": 126.8256,
-    "metricValue": 0,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
-  },
-  {
     "id": "univ_schl0000136",
     "name": "성신여자대학교",
     "type": "university",
@@ -2457,20 +2079,6 @@
     "province": "chungbuk",
     "lat": 37.1738,
     "lon": 128.1962,
-    "metricValue": 0,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
-  },
-  {
-    "id": "univ_schl0000138",
-    "name": "세종대학교",
-    "type": "university",
-    "cityId": "guri",
-    "province": "gyeonggi",
-    "lat": 37.5521,
-    "lon": 127.0746,
     "metricValue": 0,
     "metricUnit": "만원/교원",
     "metricLabel": "전임교원 1인당 교외연구비",
@@ -2639,20 +2247,6 @@
     "province": "chungnam",
     "lat": 36.7684,
     "lon": 126.9289,
-    "metricValue": 0,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
-  },
-  {
-    "id": "univ_schl0000143",
-    "name": "숭실대학교",
-    "type": "university",
-    "cityId": "gwacheon",
-    "province": "gyeonggi",
-    "lat": 37.4947,
-    "lon": 126.9592,
     "metricValue": 0,
     "metricUnit": "만원/교원",
     "metricLabel": "전임교원 1인당 교외연구비",
@@ -2877,20 +2471,6 @@
     "province": "gyeongnam",
     "lat": 35.1647,
     "lon": 128.099,
-    "metricValue": 0,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "전문대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
-  },
-  {
-    "id": "univ_schl0000512",
-    "name": "연암대학교",
-    "type": "university",
-    "cityId": "pyeongtaek",
-    "province": "gyeonggi",
-    "lat": 36.9475,
-    "lon": 127.1568,
     "metricValue": 0,
     "metricUnit": "만원/교원",
     "metricLabel": "전임교원 1인당 교외연구비",
@@ -3178,20 +2758,6 @@
     "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
   },
   {
-    "id": "univ_schl0000154",
-    "name": "유원대학교",
-    "type": "university",
-    "cityId": "cheonan",
-    "province": "chungnam",
-    "lat": 36.8522,
-    "lon": 127.0611,
-    "metricValue": 0,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
-  },
-  {
     "id": "univ_schl0000524",
     "name": "유한대학교",
     "type": "university",
@@ -3199,48 +2765,6 @@
     "province": "gyeonggi",
     "lat": 37.4871,
     "lon": 126.8211,
-    "metricValue": 0,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "전문대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
-  },
-  {
-    "id": "univ_schl0000161",
-    "name": "을지대학교",
-    "type": "university",
-    "cityId": "yangyang",
-    "province": "gangwon",
-    "lat": 38.0603,
-    "lon": 128.6802,
-    "metricValue": 0,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
-  },
-  {
-    "id": "univ_schl0000163",
-    "name": "이화여자대학교",
-    "type": "university",
-    "cityId": "bucheon",
-    "province": "gyeonggi",
-    "lat": 37.5562,
-    "lon": 126.8362,
-    "metricValue": 0,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
-  },
-  {
-    "id": "univ_schl0000525",
-    "name": "인덕대학교",
-    "type": "university",
-    "cityId": "guri",
-    "province": "gyeonggi",
-    "lat": 37.632,
-    "lon": 127.0558,
     "metricValue": 0,
     "metricUnit": "만원/교원",
     "metricLabel": "전임교원 1인당 교외연구비",
@@ -3304,20 +2828,6 @@
     "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
   },
   {
-    "id": "univ_schl0000170",
-    "name": "장로회신학대학교",
-    "type": "university",
-    "cityId": "guri",
-    "province": "gyeonggi",
-    "lat": 37.5499,
-    "lon": 127.1033,
-    "metricValue": 0,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
-  },
-  {
     "id": "univ_schl0000527",
     "name": "장안대학교",
     "type": "university",
@@ -3353,20 +2863,6 @@
     "province": "seoul",
     "lat": 37.5674,
     "lon": 126.9664,
-    "metricValue": 0,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "전문대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
-  },
-  {
-    "id": "univ_schl0000529",
-    "name": "전남과학대학교",
-    "type": "university",
-    "cityId": "sunchang",
-    "province": "jeonbuk",
-    "lat": 35.2761,
-    "lon": 127.132,
     "metricValue": 0,
     "metricUnit": "만원/교원",
     "metricLabel": "전임교원 1인당 교외연구비",
@@ -3539,20 +3035,6 @@
     "metricUnit": "만원/교원",
     "metricLabel": "전임교원 1인당 교외연구비",
     "subCategory": "전문대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
-  },
-  {
-    "id": "univ_schl0000173",
-    "name": "중부대학교",
-    "type": "university",
-    "cityId": "goyang",
-    "province": "gyeonggi",
-    "lat": 37.7137,
-    "lon": 126.8899,
-    "metricValue": 0,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 사립",
     "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
   },
   {
@@ -3731,20 +3213,6 @@
     "province": "jeonnam",
     "lat": 34.9776,
     "lon": 126.4735,
-    "metricValue": 0,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
-  },
-  {
-    "id": "univ_schl0000180",
-    "name": "총신대학교",
-    "type": "university",
-    "cityId": "gwacheon",
-    "province": "gyeonggi",
-    "lat": 37.4893,
-    "lon": 126.967,
     "metricValue": 0,
     "metricUnit": "만원/교원",
     "metricLabel": "전임교원 1인당 교외연구비",
@@ -4018,20 +3486,6 @@
     "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
   },
   {
-    "id": "univ_schl0000191",
-    "name": "한국성서대학교",
-    "type": "university",
-    "cityId": "cheorwon",
-    "province": "gangwon",
-    "lat": 38.1033,
-    "lon": 127.399,
-    "metricValue": 0,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
-  },
-  {
     "id": "univ_schl0000570",
     "name": "한국승강기대학교",
     "type": "university",
@@ -4071,48 +3525,6 @@
     "metricUnit": "만원/교원",
     "metricLabel": "전임교원 1인당 교외연구비",
     "subCategory": "전문대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
-  },
-  {
-    "id": "univ_schl0000192",
-    "name": "한국외국어대학교",
-    "type": "university",
-    "cityId": "gwangju_gg",
-    "province": "gyeonggi",
-    "lat": 37.3363,
-    "lon": 127.2656,
-    "metricValue": 0,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 사립",
-    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
-  },
-  {
-    "id": "univ_schl0003022",
-    "name": "한국전통문화대학교",
-    "type": "university",
-    "cityId": "sejong",
-    "province": "sejong",
-    "lat": 36.4933,
-    "lon": 127.2498,
-    "metricValue": 0,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 특별법국립",
-    "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
-  },
-  {
-    "id": "univ_schl0000032",
-    "name": "한국체육대학교",
-    "type": "university",
-    "cityId": "hanam",
-    "province": "gyeonggi",
-    "lat": 37.5199,
-    "lon": 127.1309,
-    "metricValue": 0,
-    "metricUnit": "만원/교원",
-    "metricLabel": "전임교원 1인당 교외연구비",
-    "subCategory": "대학 · 국립",
     "sourceNote": "대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)"
   },
   {

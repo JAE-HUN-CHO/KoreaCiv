@@ -123,12 +123,13 @@ const RAW_PORTS: FacilityPoint[] = [
   { id: 'port_mokpo', name: '목포항', type: 'port', cityId: 'mokpo', province: 'jeonnam', lat: 34.782, lon: 126.382, metricValue: 24, metricUnit: '백만톤', metricLabel: '연간 총물동량', subCategory: '서남권 자동차·연안항', sourceNote: '해양수산부 항만물동량 (2024)' },
   { id: 'port_masan', name: '마산항', type: 'port', cityId: 'changwon', province: 'gyeongnam', lat: 35.195, lon: 128.584, metricValue: 18, metricUnit: '백만톤', metricLabel: '연간 총물동량', subCategory: '기계·철재 무역항', sourceNote: '해양수산부 항만물동량 (2024)' },
   { id: 'port_jeju', name: '제주항', type: 'port', cityId: 'jeju_si', province: 'jeju', lat: 33.524, lon: 126.542, metricValue: 19, metricUnit: '백만톤', metricLabel: '연간 총물동량', subCategory: '크루즈·연안물류항', sourceNote: '해양수산부 항만물동량 (2024)' },
-  // 아래 15곳(옥포항은 거제 엔트리에 포함돼 법정항만 16곳)은 항만법 시행령 별표1(2026-06-23
-  // 개정)의 법정 무역항 30곳 중 위 12개 엔트리(13개 법정항만) 외 나머지를 보충함.
+  // 아래 16곳(옥포항은 거제 엔트리에 포함돼 법정항만 17곳)은 항만법 시행령 별표1(2026-06-23
+  // 개정)의 법정 무역항 31곳 중 위 12개 엔트리(13개 법정항만) 외 나머지를 보충함.
   // 물동량 수치는 공식 통계를 확인하지 못해 규모 추정치이며 "추정"으로 표시함.
   { id: 'port_gyeongin', name: '경인항', type: 'port', cityId: 'incheon', province: 'incheon', lat: 37.559, lon: 126.604, metricValue: 8, metricUnit: '백만톤', metricLabel: '연간 총물동량 (추정)', subCategory: '경인아라뱃길 운하항', sourceNote: '항만법 시행령 별표1 · 물동량 규모 추정' },
   { id: 'port_seoul', name: '서울항', type: 'port', cityId: 'seoul', province: 'seoul', lat: 37.528, lon: 126.935, metricValue: 0.1, metricUnit: '백만톤', metricLabel: '연간 총물동량 (추정)', subCategory: '한강 마포 소규모 하역항', sourceNote: '항만법 시행령 별표1 · 물동량 규모 추정' },
-  { id: 'port_taean', name: '태안항 (안흥항)', type: 'port', cityId: 'taean', province: 'chungnam', lat: 36.681, lon: 126.153, metricValue: 3, metricUnit: '백만톤', metricLabel: '연간 총물동량 (추정)', subCategory: '서해중부 연안·어항', sourceNote: '항만법 시행령 별표1 · 물동량 규모 추정' },
+  { id: 'port_taean', name: '태안항', type: 'port', cityId: 'taean', province: 'chungnam', lat: 36.905, lon: 126.223, metricValue: 3, metricUnit: '백만톤', metricLabel: '연간 총물동량 (추정)', subCategory: '서해중부 연안 무역항', sourceNote: '항만법 시행령 별표1(방갈리 북측 기준점) · 물동량 규모 추정' },
+  { id: 'port_okgye', name: '옥계항', type: 'port', cityId: 'gangneung', province: 'gangwon', lat: 37.623, lon: 129.057, metricValue: 2, metricUnit: '백만톤', metricLabel: '연간 총물동량 (추정)', subCategory: '강릉 주수천 하구 연안항', sourceNote: '항만법 시행령 별표1 · 물동량 규모 추정' },
   { id: 'port_boryeong', name: '보령항', type: 'port', cityId: 'boryeong', province: 'chungnam', lat: 36.417, lon: 126.536, metricValue: 5, metricUnit: '백만톤', metricLabel: '연간 총물동량 (추정)', subCategory: '화력발전 연료 하역항', sourceNote: '항만법 시행령 별표1 · 물동량 규모 추정' },
   { id: 'port_janghang', name: '장항항', type: 'port', cityId: 'seocheon', province: 'chungnam', lat: 36.007, lon: 126.686, metricValue: 4, metricUnit: '백만톤', metricLabel: '연간 총물동량 (추정)', subCategory: '금강 하구 연안항', sourceNote: '항만법 시행령 별표1 · 물동량 규모 추정' },
   { id: 'port_wando', name: '완도항', type: 'port', cityId: 'wando', province: 'jeonnam', lat: 34.316, lon: 126.761, metricValue: 3, metricUnit: '백만톤', metricLabel: '연간 총물동량 (추정)', subCategory: '다도해 연안여객 항만', sourceNote: '항만법 시행령 별표1 · 물동량 규모 추정' },
@@ -137,7 +138,7 @@ const RAW_PORTS: FacilityPoint[] = [
   { id: 'port_tongyeong', name: '통영항', type: 'port', cityId: 'tongyeong', province: 'gyeongnam', lat: 34.840, lon: 128.420, metricValue: 3, metricUnit: '백만톤', metricLabel: '연간 총물동량 (추정)', subCategory: '한려수도 연안여객 항만', sourceNote: '항만법 시행령 별표1 · 물동량 규모 추정' },
   { id: 'port_jangseungpo', name: '장승포·고현·옥포항', type: 'port', cityId: 'geoje', province: 'gyeongnam', lat: 34.867, lon: 128.730, metricValue: 8, metricUnit: '백만톤', metricLabel: '연간 총물동량 (추정)', subCategory: '거제 조선산업 지원항', sourceNote: '항만법 시행령 별표1 · 물동량 규모 추정' },
   { id: 'port_jinhae', name: '진해항', type: 'port', cityId: 'changwon', province: 'gyeongnam', lat: 35.140, lon: 128.681, metricValue: 10, metricUnit: '백만톤', metricLabel: '연간 총물동량 (추정)', subCategory: '해군기지 인접 군수지원항', sourceNote: '항만법 시행령 별표1 · 물동량 규모 추정' },
-  { id: 'port_hosan', name: '호산항', type: 'port', cityId: 'uljin', province: 'gyeongbuk', lat: 37.176, lon: 129.342, metricValue: 7, metricUnit: '백만톤', metricLabel: '연간 총물동량 (추정)', subCategory: '울진 산업단지 지원항', sourceNote: '항만법 시행령 별표1 · 물동량 규모 추정' },
+  { id: 'port_hosan', name: '호산항', type: 'port', cityId: 'samcheok', province: 'gangwon', lat: 37.176, lon: 129.342, metricValue: 7, metricUnit: '백만톤', metricLabel: '연간 총물동량 (추정)', subCategory: '삼척 원덕읍 산업단지 지원항', sourceNote: '항만법 시행령 별표1 · 물동량 규모 추정' },
   { id: 'port_samcheok', name: '삼척항', type: 'port', cityId: 'samcheok', province: 'gangwon', lat: 37.435, lon: 129.190, metricValue: 9, metricUnit: '백만톤', metricLabel: '연간 총물동량 (추정)', subCategory: '시멘트 전용 하역항', sourceNote: '항만법 시행령 별표1 · 물동량 규모 추정' },
   { id: 'port_sokcho', name: '속초항', type: 'port', cityId: 'sokcho', province: 'gangwon', lat: 38.200, lon: 128.584, metricValue: 2, metricUnit: '백만톤', metricLabel: '연간 총물동량 (추정)', subCategory: '동해북부 연안여객 항만', sourceNote: '항만법 시행령 별표1 · 물동량 규모 추정' },
   { id: 'port_seogwipo', name: '서귀포항', type: 'port', cityId: 'seogwipo', province: 'jeju', lat: 33.239, lon: 126.567, metricValue: 2, metricUnit: '백만톤', metricLabel: '연간 총물동량 (추정)', subCategory: '제주 남부 연안여객 항만', sourceNote: '항만법 시행령 별표1 · 물동량 규모 추정' },

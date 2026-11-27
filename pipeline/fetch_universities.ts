@@ -28,6 +28,27 @@ interface SchoolRow {
   znNm: string;
 }
 
+// 대학알리미 getUniversityCode의 znNm(지역) 값 -> RAW_CITIES의 ProvinceCode.
+// "전남광주"는 전남·광주 통합 표기라 둘 다 허용함
+const ZN_NM_TO_PROVINCES: Record<string, string[]> = {
+  경북: ['gyeongbuk'],
+  경남: ['gyeongnam'],
+  경기: ['gyeonggi'],
+  강원: ['gangwon'],
+  충북: ['chungbuk'],
+  서울: ['seoul'],
+  충남: ['chungnam'],
+  대전: ['daejeon'],
+  부산: ['busan'],
+  대구: ['daegu'],
+  인천: ['incheon'],
+  세종: ['sejong'],
+  전남광주: ['jeonnam', 'gwangju'],
+  전북: ['jeonbuk'],
+  울산: ['ulsan'],
+  제주: ['jeju'],
+};
+
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -192,9 +213,11 @@ async function main() {
 
   console.log(`지오코딩 성공 ${geocoded}/${targets.length}`);
 
+  let regionMismatchCount = 0;
   const output = results
     .filter((r) => r.point)
-    .map(({ school, point, grant }) => {
+    .map((r) => {
+      const { school, point, grant } = r;
       const p = point!;
       let nearestCity = RAW_CITIES[0];
       let bestDist = Infinity;
@@ -204,6 +227,14 @@ async function main() {
           bestDist = d;
           nearestCity = c;
         }
+      }
+      // 대학알리미가 알려준 지역(znNm)과 가장 가까운 도시의 지역이 다르면
+      // VWorld가 동명의 다른 장소를 집은 것으로 보고 버림(예: 성남 소재
+      // 을지대학교가 "양양"의 동명 건물로 잘못 지오코딩된 사례)
+      const expectedProvinces = ZN_NM_TO_PROVINCES[school.znNm];
+      if (expectedProvinces && !expectedProvinces.includes(nearestCity.province)) {
+        regionMismatchCount++;
+        return null;
       }
       return {
         id: `univ_schl${school.schlId}`,
@@ -222,7 +253,23 @@ async function main() {
             ? '대학알리미 (data.go.kr, 2024) · 교원 1인당 수치 — 지도의 상위 24개 대학(연간 총 연구비)과 단위가 다름'
             : '대학알리미 (data.go.kr) · 연구비 자료 없음(0으로 표시)',
       };
-    });
+    })
+    .filter((r): r is NonNullable<typeof r> => r !== null);
+
+  if (regionMismatchCount > 0) {
+    console.log(`지역 불일치로 제외 ${regionMismatchCount}곳 (동명의 다른 장소로 잘못 지오코딩됐을 가능성)`);
+  }
+
+  // 요청 실패(네트워크 오류 등)가 하나라도 있으면 이 스크립트는 매번 전체를 새로
+  // 써서 기존 universities.json을 완전히 대체하므로 — 지금 실패한 대학이
+  // 이전 실행에서는 성공했었더라도 이번 결과에서 통째로 사라짐. 그래서
+  // 실패가 있으면 기존 파일을 건드리지 않고 재시도를 안내함
+  if (requestFailures > 0) {
+    console.error(
+      `요청 실패가 ${requestFailures}건 있어 기존 ${OUT}를 덮어쓰지 않았습니다. 네트워크 상태를 확인하고 다시 실행하세요.`
+    );
+    process.exit(1);
+  }
 
   fs.mkdirSync(path.dirname(OUT), { recursive: true });
   fs.writeFileSync(OUT, JSON.stringify(output, null, 2) + '\n', 'utf-8');
