@@ -117,6 +117,12 @@ export interface LiveSgisStatItem extends SgisSubdistrictItem {
   sidoCd: string;
 }
 
+export interface LiveNationalIndustryShare {
+  corpCnt: number;
+  totWorker: number;
+  sharePct: number;
+}
+
 export interface LiveBootstrapResponse {
   fetchedAt: string;
   sgisYear: string | null;
@@ -126,6 +132,8 @@ export interface LiveBootstrapResponse {
   provinceBoundaries: LiveBoundaryFeature[];
   sigunguBoundaries: LiveBoundaryFeature[];
   sgisStats: LiveSgisStatItem[];
+  /** 7대 산업(IndustryKey)의 전국 종사자 비중 — SGIS 사업체통계(stats/company.json) 실시간 집계 */
+  nationalIndustryShares?: Partial<Record<string, LiveNationalIndustryShare>>;
   kosisLatest: {
     grdpBySido: Array<{ region: string; regionCode: string; valueMillionKrw: number }>;
     grdpPcBySido: Array<{ region: string; regionCode: string; valueThousandKrw: number }>;

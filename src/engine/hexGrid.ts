@@ -4,6 +4,7 @@ import type {
   FacilityPoint,
   GridStats,
   HexTile,
+  IndustryKey,
   ProvinceCode,
   ReliefType,
   TerrainType,
@@ -922,7 +923,16 @@ export function rebuildWorldWithLiveApiData(bootstrap: LiveBootstrapResponse): K
     };
   });
 
-  const cities = buildComputedCities(liveRawCities);
+  const liveNationalShares: Partial<Record<IndustryKey, number>> = {};
+  if (bootstrap.nationalIndustryShares) {
+    for (const [key, val] of Object.entries(bootstrap.nationalIndustryShares)) {
+      if (val && val.sharePct > 0) {
+        liveNationalShares[key as IndustryKey] = val.sharePct;
+      }
+    }
+  }
+
+  const cities = buildComputedCities(liveRawCities, liveNationalShares);
 
   // 도시별 실시간 연도·SGIS 부가 지표 부착
   for (const city of cities) {

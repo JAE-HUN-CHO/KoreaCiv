@@ -392,6 +392,21 @@ const SGIS_SIDO_CODES = [
   '31', '32', '33', '34', '35', '36', '37', '38', '39',
 ];
 
+/**
+ * KoreaCiv 7대 산업(IndustryKey, src/data/rules.ts INDUSTRY_META)과
+ * SGIS 산업분류(stats/industrycode.json) 대분류 코드(KSIC) 매핑.
+ * ictScience·hospitality는 두 개 대분류를 합산 집계함.
+ */
+const SGIS_INDUSTRY_DIVISIONS: Record<string, string[]> = {
+  manufacturing: ['C'],
+  ictScience: ['J', 'M'],
+  finance: ['K'],
+  logistics: ['H'],
+  hospitality: ['I', 'R'],
+  publicAdmin: ['O'],
+  agriculture: ['A'],
+};
+
 async function runWithConcurrency<T, R>(
   items: T[],
   limit: number,
@@ -874,6 +889,73 @@ async function startServer() {
         sgisStats = statPerSido.flat();
       })();
 
+      // 7대 산업(IndustryKey)의 전국 종사자 수를 SGIS 사업체통계(stats/company.json)로 실시간 조회해
+      // LQ(입지계수) 산정의 전국 기준치를 koreaCities.ts 정적 수치 대신 실측값으로 대체
+      let nationalIndustryShares: Record<string, { corpCnt: number; totWorker: number; sharePct: number }> = {};
+      const industryTask = (async () => {
+        if (!cfg.hasSgis) return;
+        await sgisTask;
+        if (!sgisYear) return;
+
+        // class_code 없이 호출하면(전국 17개 시도 목록) 모든 업종을 합친 전국 전체
+        // 종사자 수가 all_worker_cnt에 내려옴 — 이게 LQ 분모(전국 전체 종사자 수).
+        // (class_code를 넣으면 all_worker_cnt도 그 업종만의 전국 합계로 바뀌어버려
+        //  전체 분모로 쓸 수 없음 — 반드시 별도 호출 필요)
+        let totalEmployeeCnt = 0;
+        try {
+          const totalRaw = await fetchSgisApi<{
+            errCd?: number;
+            result?: Array<Record<string, string>>;
+          }>('stats/company.json', { year: sgisYear, low_search: '1' }, 12_000);
+          if (totalRaw.errCd === 0 && Array.isArray(totalRaw.result) && totalRaw.result[0]) {
+            totalEmployeeCnt = Number(totalRaw.result[0].all_worker_cnt ?? 0) || 0;
+          }
+        } catch {
+          // 전체 종사자 수 조회 실패 시 아래에서 totalEmployeeCnt <= 0으로 중단
+        }
+        if (totalEmployeeCnt <= 0) return;
+
+        const industryKeys = Object.keys(SGIS_INDUSTRY_DIVISIONS);
+        const totalsPerIndustry = await runWithConcurrency(industryKeys, 4, async (indKey) => {
+          const divisions = SGIS_INDUSTRY_DIVISIONS[indKey];
+          let corpCnt = 0;
+          let totWorker = 0;
+          for (const classCode of divisions) {
+            try {
+              // adm_cd를 지정하지 않으면(전국 17개 시도 목록) class_code 업종의 시도별
+              // corp_cnt/tot_worker가 내려옴 — 합산하면 그 업종의 전국 합계가 됨.
+              // adm_cd='non'을 보내면 -200(행정동 코드 오류)이 나므로 adm_cd는 생략해야 함.
+              const raw = await fetchSgisApi<{
+                errCd?: number;
+                result?: Array<Record<string, string>>;
+              }>(
+                'stats/company.json',
+                { year: sgisYear, low_search: '1', class_code: classCode },
+                12_000
+              );
+              if (raw.errCd === 0 && Array.isArray(raw.result)) {
+                for (const row of raw.result) {
+                  corpCnt += Number(row.corp_cnt ?? 0) || 0;
+                  totWorker += Number(row.tot_worker ?? 0) || 0;
+                }
+              }
+            } catch {
+              // 일부 업종 분류 실패 시 해당 분류만 건너뜀 (0으로 남음)
+            }
+          }
+          return [indKey, { corpCnt, totWorker }] as const;
+        });
+
+        const result: Record<string, { corpCnt: number; totWorker: number; sharePct: number }> = {};
+        for (const [indKey, totals] of totalsPerIndustry) {
+          result[indKey] = {
+            ...totals,
+            sharePct: Number(((totals.totWorker / totalEmployeeCnt) * 100).toFixed(2)),
+          };
+        }
+        nationalIndustryShares = result;
+      })();
+
       let kosisPopYear = '';
       let kosisAgingYear = '';
       let kosisGrdpYear = '';
@@ -934,7 +1016,7 @@ async function startServer() {
         }
       })();
 
-      await Promise.all([sgisTask, kosisTask]);
+      await Promise.all([sgisTask, kosisTask, industryTask]);
 
       return {
         fetchedAt: new Date().toISOString(),
@@ -945,6 +1027,7 @@ async function startServer() {
         provinceBoundaries,
         sigunguBoundaries,
         sgisStats,
+        nationalIndustryShares,
         kosisLatest: {
           grdpBySido: kosisGrdpBySido,
           grdpPcBySido: kosisGrdpPcBySido,
