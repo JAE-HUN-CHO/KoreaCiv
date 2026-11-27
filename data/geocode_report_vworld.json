@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-11-27T15:20:25Z",
+  "generatedAt": "2026-11-27T15:54:33Z",
   "geocoder": "VWorld (국토교통부 공간정보) 장소·주소 검색",
   "matchRadiusKm": 5.0,
-  "checked": 478,
-  "succeeded": 422,
-  "successRate": 0.8828,
+  "checked": 473,
+  "succeeded": 417,
+  "successRate": 0.8816,
   "skipped": {
     "defense_hub": "도시 단위 좌표만 쓰므로 제외"
   },
@@ -14,8 +14,8 @@
       "ok": 12
     },
     "university": {
-      "checked": 347,
-      "ok": 345
+      "checked": 342,
+      "ok": 340
     },
     "cultural_site": {
       "checked": 30,

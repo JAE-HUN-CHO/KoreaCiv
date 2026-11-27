@@ -10,7 +10,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { RAW_CITIES } from '../src/data/koreaCities';
-import { KOREA_FACILITIES } from '../src/data/koreaFacilities';
+import { RAW_UNIVERSITIES } from '../src/data/koreaFacilities';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(__dirname, '..', 'src', 'data', 'generated', 'universities.json');
@@ -90,22 +90,18 @@ async function vworldGeocode(
     errorformat: 'json',
     key: VWORLD_KEY,
   });
-  let result: { lat: number; lon: number } | null = null;
-  try {
-    const resp = await fetch(`https://api.vworld.kr/req/search?${params.toString()}`);
-    const data = (await resp.json()) as {
-      response?: { result?: { items?: Array<{ title: string; category: string; point: { x: string; y: string } }> } };
-    };
-    const items = data.response?.result?.items ?? [];
-    // "학교" 범주이면서 이름이 정확히 일치하는 결과를 우선 채택
-    const exact = items.find((it) => it.title === name && it.category?.includes('학교'));
-    const best = exact ?? items.find((it) => it.title === name) ?? items[0];
-    if (best) {
-      result = { lat: Number(best.point.y), lon: Number(best.point.x) };
-    }
-  } catch {
-    result = null;
-  }
+  // 요청 자체가 실패(네트워크 오류 등)하면 캐시하지 않음 — 연결이 복구된 뒤
+  // 재실행하면 다시 시도되게 함. "검색은 됐지만 결과 0건"만 null로 캐시함
+  let result: { lat: number; lon: number } | null;
+  const resp = await fetch(`https://api.vworld.kr/req/search?${params.toString()}`);
+  const data = (await resp.json()) as {
+    response?: { result?: { items?: Array<{ title: string; category: string; point: { x: string; y: string } }> } };
+  };
+  const items = data.response?.result?.items ?? [];
+  // "학교" 범주이면서 이름이 정확히 일치하는 결과를 우선 채택
+  const exact = items.find((it) => it.title === name && it.category?.includes('학교'));
+  const best = exact ?? items.find((it) => it.title === name) ?? items[0];
+  result = best ? { lat: Number(best.point.y), lon: Number(best.point.x) } : null;
   cache[name] = result;
   fs.writeFileSync(CACHE, JSON.stringify(cache), 'utf-8');
   return result;
@@ -157,11 +153,15 @@ async function main() {
   const mainCampuses = schools.filter((s) => s.clgcpDivCd === '1');
   console.log(`전체 ${schools.length}건, 본교 ${mainCampuses.length}건`);
 
-  const existingNames = new Set(
-    KOREA_FACILITIES.filter((f) => f.type === 'university').map((f) =>
-      f.name.replace(/\s*\(.*?\)\s*/g, '').trim()
-    )
-  );
+  // 기존 24곳(RAW_UNIVERSITIES 원본 — 생성된 KOREA_FACILITIES를 쓰면 재실행할
+  // 때마다 이전에 생성해 둔 323곳까지 "이미 있음"으로 잘못 제외됨)만 제외 대상으로 삼음.
+  // "KAIST (한국과학기술원)"처럼 괄호 안이 대학알리미 정식명인 경우를 위해
+  // server.ts의 universityMatchKeyword와 같은 규칙으로 키워드를 뽑음
+  const universityMatchKeyword = (name: string): string => {
+    const m = name.match(/\(([^)]+)\)/);
+    return (m ? m[1] : name).trim();
+  };
+  const existingNames = new Set(RAW_UNIVERSITIES.map((u) => universityMatchKeyword(u.name)));
 
   const targets = mainCampuses.filter((s) => !existingNames.has(s.schlKrnNm));
   console.log(`기존 24곳 제외 후 신규 대상 ${targets.length}곳`);
@@ -173,12 +173,22 @@ async function main() {
   }
 
   let geocoded = 0;
+  let requestFailures = 0;
   const results = await runWithConcurrency(targets, 5, async (school) => {
-    const point = await vworldGeocode(school.schlKrnNm, cache);
-    const grant = await fetchResearchGrant(school.schlId);
-    if (point) geocoded++;
-    return { school, point, grant };
+    try {
+      const point = await vworldGeocode(school.schlKrnNm, cache);
+      const grant = await fetchResearchGrant(school.schlId);
+      if (point) geocoded++;
+      return { school, point, grant };
+    } catch {
+      // 네트워크 오류 등 요청 자체가 실패 — 캐시 안 타므로 재실행하면 다시 시도됨
+      requestFailures++;
+      return { school, point: null, grant: null };
+    }
   });
+  if (requestFailures > 0) {
+    console.log(`요청 실패 ${requestFailures}곳 — 재실행하면 다시 시도됨`);
+  }
 
   console.log(`지오코딩 성공 ${geocoded}/${targets.length}`);
 

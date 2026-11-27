@@ -3,11 +3,11 @@ import { CIV_RULES } from './rules';
 import generatedUniversitiesRaw from './generated/universities.json';
 
 /**
- * 대학알리미(data.go.kr) 학교코드 전체 목록 기반, 상위 24개 외 323개 대학.
+ * 대학알리미(data.go.kr) 학교코드 전체 목록 기반, 상위 24개 외 318개 대학.
  * "전임교원 1인당 교외연구비"(만원) 단위라 상위 24개(연간 총 연구비, 억원)와 단위가
  * 달라, 아래 RAW_UNIVERSITIES와 분리해 둠 — 합쳐서 정렬하면 Top5 불가사의 선정이
  * 단위 차이 때문에 깨짐(예: 10억원짜리를 8,140억원짜리보다 위로 잘못 올림).
- * 그래서 이 323곳은 불가사의 후보에서 완전히 제외하고 지도 점 데이터로만 표시함.
+ * 그래서 이 318곳은 불가사의 후보에서 완전히 제외하고 지도 점 데이터로만 표시함.
  * 재생성: npx tsx pipeline/fetch_universities.ts
  */
 const RAW_UNIVERSITIES_EXTRA: FacilityPoint[] = generatedUniversitiesRaw as FacilityPoint[];
@@ -46,14 +46,14 @@ const RAW_NATIONAL_PARKS: Omit<FacilityPoint, 'isWonder' | 'wonderKind' | 'wonde
  * 주요 연구중심 대학 (대학알리미 연구비 총액 기반)
  * 규칙: 연간 연구비 총액 상위 5곳을 학문 불가사의(Academic Wonder)로 자동 선정
  */
-const RAW_UNIVERSITIES: Omit<FacilityPoint, 'isWonder' | 'wonderKind' | 'wonderRank'>[] = [
+export const RAW_UNIVERSITIES: Omit<FacilityPoint, 'isWonder' | 'wonderKind' | 'wonderRank'>[] = [
   { id: 'univ_snu', name: '서울대학교', type: 'university', cityId: 'seoul', province: 'seoul', lat: 37.460, lon: 126.952, metricValue: 8140, metricUnit: '억원/년', metricLabel: '연간 연구비', subCategory: '국가거점 국립대학', sourceNote: '대학알리미 연구비 수주 현황 (2024)' },
   { id: 'univ_yonsei', name: '연세대학교', type: 'university', cityId: 'seoul', province: 'seoul', lat: 37.565, lon: 126.939, metricValue: 6420, metricUnit: '억원/년', metricLabel: '연간 연구비', subCategory: '사립 연구중심대학', sourceNote: '대학알리미 연구비 수주 현황 (2024)' },
   { id: 'univ_kaist', name: 'KAIST (한국과학기술원)', type: 'university', cityId: 'daejeon', province: 'daejeon', lat: 36.372, lon: 127.360, metricValue: 5890, metricUnit: '억원/년', metricLabel: '연간 연구비', subCategory: '과학기술특성화대학', sourceNote: '대학알리미 연구비 수주 현황 (2024)' },
   { id: 'univ_korea', name: '고려대학교', type: 'university', cityId: 'seoul', province: 'seoul', lat: 37.590, lon: 127.032, metricValue: 5180, metricUnit: '억원/년', metricLabel: '연간 연구비', subCategory: '사립 연구중심대학', sourceNote: '대학알리미 연구비 수주 현황 (2024)' },
   { id: 'univ_skku', name: '성균관대학교', type: 'university', cityId: 'suwon', province: 'gyeonggi', lat: 37.294, lon: 126.975, metricValue: 4960, metricUnit: '억원/년', metricLabel: '연간 연구비', subCategory: '사립 연구중심대학 (자연과학캠퍼스)', sourceNote: '대학알리미 연구비 수주 현황 (2024)' },
   { id: 'univ_hanyang', name: '한양대학교', type: 'university', cityId: 'seoul', province: 'seoul', lat: 37.557, lon: 127.046, metricValue: 3820, metricUnit: '억원/년', metricLabel: '연간 연구비', subCategory: '사립 연구중심대학', sourceNote: '대학알리미 연구비 수주 현황 (2024)' },
-  { id: 'univ_postech', name: 'POSTECH (포항공과대)', type: 'university', cityId: 'pohang', province: 'gyeongbuk', lat: 36.014, lon: 129.322, metricValue: 3340, metricUnit: '억원/년', metricLabel: '연간 연구비', subCategory: '과학기술특성화대학', sourceNote: '대학알리미 연구비 수주 현황 (2024)' },
+  { id: 'univ_postech', name: 'POSTECH (포항공과대학교)', type: 'university', cityId: 'pohang', province: 'gyeongbuk', lat: 36.014, lon: 129.322, metricValue: 3340, metricUnit: '억원/년', metricLabel: '연간 연구비', subCategory: '과학기술특성화대학', sourceNote: '대학알리미 연구비 수주 현황 (2024)' },
   { id: 'univ_pnu', name: '부산대학교', type: 'university', cityId: 'busan', province: 'busan', lat: 35.233, lon: 129.079, metricValue: 2680, metricUnit: '억원/년', metricLabel: '연간 연구비', subCategory: '거점국립대학', sourceNote: '대학알리미 연구비 수주 현황 (2024)' },
   { id: 'univ_knu', name: '경북대학교', type: 'university', cityId: 'daegu', province: 'daegu', lat: 35.889, lon: 128.610, metricValue: 2490, metricUnit: '억원/년', metricLabel: '연간 연구비', subCategory: '거점국립대학', sourceNote: '대학알리미 연구비 수주 현황 (2024)' },
   { id: 'univ_khu', name: '경희대학교', type: 'university', cityId: 'yongin', province: 'gyeonggi', lat: 37.243, lon: 127.081, metricValue: 2380, metricUnit: '억원/년', metricLabel: '연간 연구비', subCategory: '사립 종합대학', sourceNote: '대학알리미 연구비 수주 현황 (2024)' },
@@ -68,7 +68,7 @@ const RAW_UNIVERSITIES: Omit<FacilityPoint, 'isWonder' | 'wonderKind' | 'wonderR
   { id: 'univ_gist', name: 'GIST (광주과학기술원)', type: 'university', cityId: 'gwangju', province: 'gwangju', lat: 35.228, lon: 126.843, metricValue: 1460, metricUnit: '억원/년', metricLabel: '연간 연구비', subCategory: '과학기술특성화대학', sourceNote: '대학알리미 연구비 수주 현황 (2024)' },
   { id: 'univ_kangwon', name: '강원대학교', type: 'university', cityId: 'chuncheon', province: 'gangwon', lat: 37.869, lon: 127.744, metricValue: 1380, metricUnit: '억원/년', metricLabel: '연간 연구비', subCategory: '거점국립대학', sourceNote: '대학알리미 연구비 수주 현황 (2024)' },
   { id: 'univ_gnu', name: '경상국립대학교', type: 'university', cityId: 'jinju', province: 'gyeongnam', lat: 35.154, lon: 128.098, metricValue: 1320, metricUnit: '억원/년', metricLabel: '연간 연구비', subCategory: '거점국립대학', sourceNote: '대학알리미 연구비 수주 현황 (2024)' },
-  { id: 'univ_dgist', name: 'DGIST (대구경북과기원)', type: 'university', cityId: 'daegu', province: 'daegu', lat: 35.702, lon: 128.455, metricValue: 1180, metricUnit: '억원/년', metricLabel: '연간 연구비', subCategory: '과학기술특성화대학', sourceNote: '대학알리미 연구비 수주 현황 (2024)' },
+  { id: 'univ_dgist', name: 'DGIST (대구경북과학기술원)', type: 'university', cityId: 'daegu', province: 'daegu', lat: 35.702, lon: 128.455, metricValue: 1180, metricUnit: '억원/년', metricLabel: '연간 연구비', subCategory: '과학기술특성화대학', sourceNote: '대학알리미 연구비 수주 현황 (2024)' },
   { id: 'univ_yeungnam', name: '영남대학교', type: 'university', cityId: 'gyeongsan', province: 'gyeongbuk', lat: 35.831, lon: 128.754, metricValue: 1120, metricUnit: '억원/년', metricLabel: '연간 연구비', subCategory: '사립 종합대학', sourceNote: '대학알리미 연구비 수주 현황 (2024)' },
   { id: 'univ_jeju', name: '제주대학교', type: 'university', cityId: 'jeju_si', province: 'jeju', lat: 33.455, lon: 126.562, metricValue: 960, metricUnit: '억원/년', metricLabel: '연간 연구비', subCategory: '거점국립대학', sourceNote: '대학알리미 연구비 수주 현황 (2024)' },
 ];
@@ -272,7 +272,7 @@ export const KOREA_FACILITIES: FacilityPoint[] = [
       wonderRank: rank,
     };
   }),
-  // 신규 323개 대학은 불가사의 후보 대상이 아님(위 주석 참고) — isWonder 항상 false
+  // 신규 318개 대학은 불가사의 후보 대상이 아님(위 주석 참고) — isWonder 항상 false
   ...RAW_UNIVERSITIES_EXTRA,
   ...RAW_CULTURAL_SITES.map((c) => {
     const rank = culturalWonderIds.get(c.id);
