@@ -396,11 +396,23 @@ const PROVINCE_HOUSING_BASE: Record<ProvinceCode, number> = {
 
 /**
  * 공개 규칙(rules.ts)에 따라 모든 161개 도시의 지구(District), 시민 구성, 20개 렌즈 지표, 6대 Civ 산출량 산출
+ *
+ * @param liveNationalShares SGIS 사업체통계(stats/company.json) 실시간 전국 종사자 비중(%).
+ *   도시별 산업 비중(sourceRaws)은 그대로 두고, LQ(입지계수) 분모인 전국 기준치만 실측값으로 교체함.
+ *   누락된 업종은 161개 도시 가중평균(fallback)을 그대로 사용.
  */
-export function buildComputedCities(sourceRaws: CityRawRecord[] = RAW_CITIES): CityComputed[] {
+export function buildComputedCities(
+  sourceRaws: CityRawRecord[] = RAW_CITIES,
+  liveNationalShares?: Partial<Record<IndustryKey, number>>
+): CityComputed[] {
   const totalWorkersSum = sourceRaws.reduce((s, c) => s + c.totalWorkers, 0) || 1;
   const natShares = {} as Record<IndustryKey, number>;
   for (const key of INDUSTRY_KEYS) {
+    const live = liveNationalShares?.[key];
+    if (live !== undefined && live > 0) {
+      natShares[key] = live;
+      continue;
+    }
     const weighted = sourceRaws.reduce((s, c) => s + c.totalWorkers * (c.shares[key] / 100), 0);
     natShares[key] = (weighted / totalWorkersSum) * 100;
   }

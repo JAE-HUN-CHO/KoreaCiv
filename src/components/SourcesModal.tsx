@@ -104,7 +104,7 @@ export const SourcesModal: React.FC<SourcesModalProps> = ({ stats, onClose }) =>
               <div className="border-b border-[#182738] pb-2 sm:border-b-0">
                 <div className="font-semibold text-[#ECEAE2]">특화 지구 (Districts)</div>
                 <p className="mt-0.5 text-[#9BB0C4]">
-                  입지계수(LQ) {CIV_RULES.district.minLocationQuotient}배 이상이면서 종사자 {CIV_RULES.district.minWorkers.toLocaleString('ko-KR')}명 이상인 산업 상위 {CIV_RULES.district.maxDistrictsPerCity}개를 자동 부여합니다. (Harbor는 무역항 소재 도시 한정)
+                  입지계수(LQ) {CIV_RULES.district.minLocationQuotient}배 이상이면서 종사자 {CIV_RULES.district.minWorkers.toLocaleString('ko-KR')}명 이상인 산업 상위 {CIV_RULES.district.maxDistrictsPerCity}개를 자동 부여합니다. (Harbor는 무역항 소재 도시 한정) 도시별 산업 비중은 시·군 입력값을 쓰고, LQ의 전국 기준치(분모)는 로컬 실행 시 SGIS 사업체통계(stats/company.json)로 실시간 대체됩니다.
                 </p>
               </div>
               <div>
