@@ -1,0 +1,23 @@
+{
+  "terrain": {
+    "output": "src/data/generated/hexTerrain.json",
+    "generatedAt": "2026-11-27T04:46:38Z",
+    "cells": 7205,
+    "sources": [
+      {
+        "name": "Copernicus DEM GLO-90",
+        "url": "https://registry.opendata.aws/copernicus-dem/",
+        "resolution": "90m",
+        "tiles": 35,
+        "note": "DSM(지표면 모델): 건물·수목 높이 포함"
+      },
+      {
+        "name": "ESA WorldCover 2021 v200",
+        "url": "https://esa-worldcover.org/",
+        "resolution": "10m 원본을 8배 축소(약 80m)해 집계",
+        "tiles": 6,
+        "license": "CC BY 4.0"
+      }
+    ]
+  }
+}
