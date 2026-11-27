@@ -9,6 +9,7 @@ import fs from 'node:fs';
 import { describe, it } from 'node:test';
 import { getKoreaCivWorld, rebuildWorldWithLiveApiData } from '../src/engine/hexGrid';
 import { CIV_RULES } from '../src/data/rules';
+import { lookupHexTerrain } from '../src/data/terrainData';
 import type { KoreaCivWorld } from '../src/engine/hexGrid';
 import type { LiveBootstrapResponse } from '../src/services/publicApis';
 
@@ -59,14 +60,27 @@ for (const [label, build] of worlds) {
         assert.equal(bad.length, 0, `기준 미달 칸 ${bad.length}개`);
       });
 
-      // 알려진 차이: 표고가 DEM 원자료가 아닌 합성 모델이라 고지대 보정을 더해 판정함.
-      // 기획서 규칙만 적용하면 산악 칸이 53개 → 2개로 줄어듦. DEM 집계(M1)가 들어오면 todo를 해제할 것.
-      it('구릉·산악은 기복 기준(300m / 600m)을 따름', { todo: '합성 표고 모델 사용 중 (REPORT.md 참고)' }, () => {
+      it('구릉·산악은 기복 기준(300m / 600m)을 따름', () => {
         const { hillsThresholdM, mountainThresholdM } = CIV_RULES.relief;
         for (const h of world.hexes) {
           const expected =
             h.reliefM >= mountainThresholdM ? 'mountain' : h.reliefM >= hillsThresholdM ? 'hills' : 'flat';
           assert.equal(h.relief, expected, `${h.id}: 기복 ${h.reliefM}m → ${h.relief}`);
+        }
+      });
+    });
+
+    describe('M1 원자료 반영', () => {
+      it('칸의 99% 이상이 DEM·토지피복 집계값을 씀', () => {
+        const missing = world.hexes.filter((h) => !lookupHexTerrain(h.id));
+        const ratio = 1 - missing.length / world.hexes.length;
+        assert.ok(ratio >= 0.99, `집계값 없는 칸 ${missing.length}개 (${(ratio * 100).toFixed(1)}%)`);
+      });
+
+      it('토지피복 칸은 집계된 최다 유형을 그대로 씀', () => {
+        for (const h of world.hexes) {
+          const real = lookupHexTerrain(h.id);
+          if (real) assert.equal(h.terrain, real.terrain, h.id);
         }
       });
     });
