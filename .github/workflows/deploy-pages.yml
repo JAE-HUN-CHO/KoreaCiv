@@ -3,6 +3,9 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  # 공공 API 스냅샷을 하루 한 번 새로 받아 재배포 (03:17 KST)
+  schedule:
+    - cron: '17 18 * * *'
   workflow_dispatch:
 
 # 기본은 읽기 전용. Pages 배포에 필요한 쓰기 권한은 deploy 작업에만 부여
@@ -17,16 +20,33 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
-      - run: npm install
+          node-version: 24
+      - run: npm ci
+
+      # server.ts를 잠깐 띄워 /api 응답을 public/data/*.json으로 저장.
+      # 키가 없거나 호출이 실패하면 건너뛰고, 앱은 내장 데이터로 동작함
+      - name: Snapshot public APIs
+        run: npx tsx scripts/snapshot-api.ts
+        timeout-minutes: 10
+        env:
+          SGIS_CONSUMER_KEY: ${{ secrets.SGIS_CONSUMER_KEY }}
+          SGIS_CONSUMER_SECRET: ${{ secrets.SGIS_CONSUMER_SECRET }}
+          KOSIS_API_KEY: ${{ secrets.KOSIS_API_KEY }}
+
+      # PLAN.md 완료 기준 검사. 스냅샷이 있으면 실데이터 반영 결과도 함께 검사
+      - run: npm test
+
+      - id: pages
+        uses: actions/configure-pages@v6
       - run: npm run build
         env:
           VITE_BASE: /${{ github.event.repository.name }}/
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+          VITE_STATIC_DEPLOY: 'true'
+          VITE_SITE_URL: ${{ steps.pages.outputs.base_url }}
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
 
@@ -41,4 +61,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
