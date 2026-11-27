@@ -367,7 +367,8 @@ export async function fetchApiStatus(): Promise<ApiStatusResponse> {
   const manifest = await loadSnapshotManifest();
   const files = manifest?.files ?? [];
   return {
-    sgis: files.includes('live-bootstrap.json') || files.some((f) => f.startsWith('sgis-')),
+    // live-bootstrap.json은 KOSIS 키만 있어도 만들어지므로 SGIS 여부는 sgis-* 파일로 판단
+    sgis: files.some((f) => f.startsWith('sgis-')),
     kosis: files.some((f) => f.startsWith('kosis-')),
     vworld: false,
     staticMode: true,

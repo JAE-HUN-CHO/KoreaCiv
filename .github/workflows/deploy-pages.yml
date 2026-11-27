@@ -31,6 +31,8 @@ jobs:
       - name: Snapshot public APIs
         run: npx tsx scripts/snapshot-api.ts
         timeout-minutes: 10
+        # 스냅샷이 실패하거나 시간이 넘어도 배포는 계속 (앱은 내장 데이터로 동작)
+        continue-on-error: true
         env:
           SGIS_CONSUMER_KEY: ${{ secrets.SGIS_CONSUMER_KEY }}
           SGIS_CONSUMER_SECRET: ${{ secrets.SGIS_CONSUMER_SECRET }}

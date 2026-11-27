@@ -26,6 +26,7 @@ import { HexMapCanvas, type CameraTarget } from './components/HexMapCanvas';
 import { LensSidebar } from './components/LensSidebar';
 import { CityViewDrawer } from './components/CityViewDrawer';
 import { HoverTooltipCard } from './components/HoverTooltipCard';
+import { PanelErrorBoundary } from './components/PanelErrorBoundary';
 import {
   fetchApiStatus,
   fetchLiveBootstrap,
@@ -686,6 +687,7 @@ export default function App() {
 
         {/* 자문관 모달 (9명의 전략 자문관) */}
         {activeTab === 'advisors' && (
+          <PanelErrorBoundary onClose={() => setActiveTab('map')}>
           <Suspense fallback={null}>
             <AdvisorsModal
               cities={world.cities}
@@ -695,10 +697,12 @@ export default function App() {
               onJumpToFacility={handleJumpToFacility}
             />
           </Suspense>
+          </PanelErrorBoundary>
         )}
 
         {/* 탐색기 (산점도 + 표, 지도 실시간 연동) */}
         {activeTab === 'explorer' && (
+          <PanelErrorBoundary onClose={() => setActiveTab('map')}>
           <Suspense fallback={null}>
             <ExplorerDrawer
               cities={world.cities}
@@ -719,10 +723,12 @@ export default function App() {
               }}
             />
           </Suspense>
+          </PanelErrorBoundary>
         )}
 
         {/* 불가사의 패널 */}
         {activeTab === 'wonders' && (
+          <PanelErrorBoundary onClose={() => setActiveTab('map')}>
           <Suspense fallback={null}>
             <WondersPanel
               facilities={world.facilities}
@@ -730,10 +736,12 @@ export default function App() {
               onClose={() => setActiveTab('map')}
             />
           </Suspense>
+          </PanelErrorBoundary>
         )}
 
         {/* 실시간 공공 API 패널 (SGIS · KOSIS · VWorld) */}
         {activeTab === 'live_api' && (
+          <PanelErrorBoundary onClose={() => setActiveTab('map')}>
           <Suspense fallback={null}>
             <LiveApiPanel
               apiStatus={apiStatus}
@@ -749,16 +757,19 @@ export default function App() {
               onClose={() => setActiveTab('map')}
             />
           </Suspense>
+          </PanelErrorBoundary>
         )}
 
         {/* 출처 및 규칙 모달 ("?") */}
         {sourcesOpen && (
+          <PanelErrorBoundary onClose={() => setSourcesOpen(false)}>
           <Suspense fallback={null}>
             <SourcesModal
               stats={world.stats}
               onClose={() => setSourcesOpen(false)}
             />
           </Suspense>
+          </PanelErrorBoundary>
         )}
       </main>
     </div>
