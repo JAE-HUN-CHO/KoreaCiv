@@ -72,12 +72,14 @@ Pages에는 서버가 없어서, 키가 필요한 즉석 조회(SGIS 자치구 �
 - 시·군 통계 대부분은 공공통계를 참고해 `src/data/*.ts`에 직접 입력한 값입니다. 출처와 기준연도는 출처 패널에 있습니다.
 - 정적 배포에서는 SGIS 2024 행정경계와 KOSIS 최신 인구·GRDP가 스냅샷으로 덮어써집니다.
 - 지형은 원자료를 칸별로 집계한 값입니다. 표고·기복은 [Copernicus DEM GLO-90](https://registry.opendata.aws/copernicus-dem/), 토지피복은 [ESA WorldCover 2021](https://esa-worldcover.org/)(CC BY 4.0)입니다.
-- **권역 간 화물 물동량은 추정치입니다.** 원자료(국가교통DB)를 집계한 값이 아니며, 화면과 출처 패널에 "추정"으로 표시돼 있습니다.
+- 칸별 인구는 시·군 인구(KOSIS)를 [WorldPop 2020](https://hub.worldpop.org/geodata/summary?id=49761)(CC BY 4.0) 100m 격자 인구 비율대로 나눈 값입니다. 시·군 합계는 KOSIS와 같습니다.
+- **시·군 화물 물동량은 추정치입니다.** 화면과 출처 패널에 "추정"으로 표시돼 있습니다. 권역 간 화물 OD는 원자료(국가교통DB)를 확인하지 못해 넣지 않았고, 물류 렌즈는 항만·공항 물동량을 함께 보여줍니다.
+- 시설 좌표는 직접 입력한 값이고, OpenStreetMap Nominatim으로 따로 검증한 결과가 `data/geocode_report.json`과 `data/geocode_failed.csv`에 있습니다.
 - 기획서와 현재 구현의 차이는 [`REPORT.md`](REPORT.md)에 정리돼 있습니다.
 
-## 지형 데이터 다시 만들기
+## 지형·인구 데이터 다시 만들기
 
-`src/data/generated/hexTerrain.json`은 저장소에 커밋돼 있어 평소에는 다시 만들 필요가 없습니다. 격자 정의를 바꿨거나 원자료를 갱신할 때만 실행합니다.
+`src/data/generated/`의 `hexTerrain.json`, `hexPopulation.json`은 저장소에 커밋돼 있어 평소에는 다시 만들 필요가 없습니다. 격자 정의를 바꿨거나 원자료를 갱신할 때만 실행합니다.
 
 ```bash
 pip install rasterio numpy
@@ -87,10 +89,24 @@ pip install rasterio numpy
 python3 pipeline/terrain.py
 ```
 
-- DEM 타일은 `data/raw/`에 받아 두고, 같은 파일이 있으면 다시 받지 않습니다.
+```bash
+python3 pipeline/population.py
+```
+
+- DEM 타일과 WorldPop 파일(약 11MB)은 `data/raw/`에 받아 두고, 같은 파일이 있으면 다시 받지 않습니다.
 - 토지피복은 용량이 커서 원격으로 축소본만 읽습니다.
 - 출처와 생성 시각은 `data/manifest.json`에 기록됩니다.
-- 격자 상수(칸 크기, 좌표 원점)는 `pipeline/terrain.py`와 앱 양쪽에 있습니다. 바꿀 때는 함께 고쳐야 합니다.
+- 격자 상수(칸 크기, 좌표 원점)는 `pipeline/terrain.py`와 앱 양쪽에 있습니다. 바꿀 때는 함께 고쳐야 합니다. `pipeline/population.py`는 `terrain.py`의 상수를 가져다 씁니다.
+
+시설 좌표 검증은 Nominatim 이용 규칙 때문에 요청 사이에 2초씩 쉽니다(약 5분, 결과는 캐시).
+
+```bash
+npx tsx scripts/dump-facilities.ts > data/raw/facilities.json
+```
+
+```bash
+python3 pipeline/geocode_check.py data/raw/facilities.json
+```
 
 ## 폴더 구조
 
@@ -98,14 +114,17 @@ python3 pipeline/terrain.py
 server.ts                 Express 서버: 화면 서빙 + 공공 API 프록시
 scripts/snapshot-api.ts   정적 배포용 API 스냅샷 수집
 pipeline/terrain.py       DEM·토지피복을 칸별로 집계 (Python)
+pipeline/population.py    격자 인구를 칸별로 집계 (Python)
+pipeline/geocode_check.py 시설 좌표를 Nominatim으로 검증 (Python)
 data/manifest.json        원자료 출처·생성 시각
+data/geocode_*            시설 좌표 검증 결과
 src/
   App.tsx                 화면 상태와 탭 구성
   components/             지도 캔버스, 렌즈 사이드바, City View, 각 탭 패널
   engine/hexGrid.ts       격자 생성, 지형 판정, 통계 배분
   engine/history.ts       역사 렌즈 (센서스 연도별 비교)
   data/                   시·군 통계, 시설, 변환 규칙(rules.ts)
-  data/generated/         파이프라인이 만든 칸별 지형 (hexTerrain.json)
+  data/generated/         파이프라인이 만든 칸별 지형·인구 (hexTerrain.json, hexPopulation.json)
   services/publicApis.ts  API 호출 (정적 모드에서는 스냅샷 읽기)
 tests/                    PLAN.md 완료 기준 테스트
 PLAN.md                   기획서

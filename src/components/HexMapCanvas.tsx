@@ -9,7 +9,6 @@ import type {
 import type { KoreaCivWorld } from '../engine/hexGrid';
 import { HEX_RADIUS_KM } from '../engine/hexGrid';
 import { KOREA_RAILWAYS, KOREA_RIVERS, latLonToKm } from '../data/koreaGeography';
-import { KOREA_FREIGHT_CORRIDORS } from '../data/koreaFacilities';
 import { DISTRICT_META } from '../data/rules';
 import { getHexFillColor } from '../utils/formatters';
 import type { CustomMapPin, SgisBoundaryOverlay } from '../services/publicApis';
@@ -121,13 +120,6 @@ const FACILITY_STYLE: Record<
   cultural_site: { color: '#D694F2', stroke: '#2A1038', shortTag: '✦' },
 };
 
-const FREIGHT_MODE_COLOR: Record<string, string> = {
-  container: 'rgba(103, 218, 240, 0.82)',
-  industrial: 'rgba(245, 174, 82, 0.80)',
-  hightech: 'rgba(148, 198, 255, 0.86)',
-  energy: 'rgba(216, 150, 240, 0.78)',
-  air_sea: 'rgba(116, 232, 186, 0.80)',
-};
 
 // 해양 지명 레이블
 const SEA_LABELS = [
@@ -298,8 +290,9 @@ export const HexMapCanvas: React.FC<HexMapCanvasProps> = ({
     return world.facilities.filter((f) => {
       if (f.isWonder && layers.wonders) return true;
       if (f.type === 'power_plant') return layers.powerPlants;
-      if (f.type === 'port') return layers.ports;
-      if (f.type === 'airport') return layers.airports;
+      // 물류 렌즈에서는 항만·공항 물동량을 물류 지표로 씀 (PLAN.md 9절: 화물 OD 대신)
+      if (f.type === 'port') return layers.ports || activeLens === 'freight_logistics';
+      if (f.type === 'airport') return layers.airports || activeLens === 'freight_logistics';
       if (f.type === 'mine') return layers.mines;
       if (f.type === 'national_park') return layers.nationalParks;
       if (f.type === 'university') return layers.universities;
@@ -309,25 +302,6 @@ export const HexMapCanvas: React.FC<HexMapCanvasProps> = ({
     });
   }, [world.facilities, layers, activeLens]);
 
-  // 화물 물류 축 좌표 사전 계산
-  const projectedFreightCorridors = useMemo(() => {
-    return KOREA_FREIGHT_CORRIDORS.map((fc) => {
-      const fromCity = world.cityMap.get(fc.fromCityId);
-      const toCity = world.cityMap.get(fc.toCityId);
-      if (!fromCity || !toCity) return null;
-      const x1 = fromCity.centerX;
-      const y1 = fromCity.centerY;
-      const x2 = toCity.centerX;
-      const y2 = toCity.centerY;
-      const dx = x2 - x1;
-      const dy = y2 - y1;
-      const len = Math.hypot(dx, dy) || 1;
-      const offset = fc.curveOffsetKm ?? 16;
-      const cx = (x1 + x2) / 2 - (dy / len) * offset;
-      const cy = (y1 + y2) / 2 + (dx / len) * offset;
-      return { ...fc, x1, y1, x2, y2, cx, cy };
-    }).filter((v): v is NonNullable<typeof v> => v !== null);
-  }, [world.cityMap]);
 
   // 초기 화면 크기에 맞춰 한반도 전체가 쾌적하게 보이도록 최초 1회만 zoom 자동 맞춤
   useEffect(() => {
@@ -721,54 +695,6 @@ export const HexMapCanvas: React.FC<HexMapCanvasProps> = ({
         ctx.strokeStyle = 'rgba(232, 206, 146, 0.68)';
         ctx.lineWidth = Math.max(1.2, Math.min(2.2, cam.zoom * 0.9));
         ctx.stroke();
-      }
-      ctx.restore();
-    }
-
-    // 8.5 권역 간 화물 물류 흐름 (KTDB Freight Flows)
-    if (layers.freightFlows || activeLens === 'freight_logistics') {
-      ctx.save();
-      ctx.lineCap = 'round';
-      for (const fc of projectedFreightCorridors) {
-        const sx1 = toScreenX(fc.x1);
-        const sy1 = toScreenY(fc.y1);
-        const sx2 = toScreenX(fc.x2);
-        const sy2 = toScreenY(fc.y2);
-        const scx = toScreenX(fc.cx);
-        const scy = toScreenY(fc.cy);
-        const strokeColor = FREIGHT_MODE_COLOR[fc.mode] ?? 'rgba(103, 218, 240, 0.8)';
-        const weight = Math.max(1.4, Math.min(6.2, (fc.annualMillionTons / 32) * Math.min(1.4, cam.zoom * 0.72)));
-
-        // 외곽 글로우
-        ctx.beginPath();
-        ctx.moveTo(sx1, sy1);
-        ctx.quadraticCurveTo(scx, scy, sx2, sy2);
-        ctx.strokeStyle = strokeColor.replace(/[\d.]+\)$/, '0.24)');
-        ctx.lineWidth = weight + 3.2;
-        ctx.stroke();
-
-        // 본선 흐름 곡선
-        ctx.beginPath();
-        ctx.moveTo(sx1, sy1);
-        ctx.quadraticCurveTo(scx, scy, sx2, sy2);
-        ctx.strokeStyle = strokeColor;
-        ctx.lineWidth = weight;
-        ctx.stroke();
-
-        // 중간 지점 화물량(Mt) 라벨 (확대 시)
-        if (cam.zoom >= 1.45) {
-          const mx = 0.25 * sx1 + 0.5 * scx + 0.25 * sx2;
-          const my = 0.25 * sy1 + 0.5 * scy + 0.25 * sy2;
-          const lbl = `${fc.annualMillionTons}Mt`;
-          ctx.font = '600 9.5px "JetBrains Mono", monospace';
-          const tw = ctx.measureText(lbl).width;
-          ctx.fillStyle = 'rgba(9, 18, 28, 0.84)';
-          ctx.fillRect(mx - tw / 2 - 3, my - 7, tw + 6, 13);
-          ctx.fillStyle = '#D9F6FF';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(lbl, mx, my);
-        }
       }
       ctx.restore();
     }
@@ -1240,7 +1166,6 @@ export const HexMapCanvas: React.FC<HexMapCanvasProps> = ({
     customPins,
     projectedRivers,
     projectedRailways,
-    projectedFreightCorridors,
     projectedSeaLabels,
     provinceBorderEdges,
     selectedCityEdges,

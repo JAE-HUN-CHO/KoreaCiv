@@ -258,7 +258,6 @@ export default function App() {
     universities: false,
     defenseHubs: false,
     culturalSites: false,
-    freightFlows: false,
     rivers: true,
     railways: false,
     provinceBorders: true,

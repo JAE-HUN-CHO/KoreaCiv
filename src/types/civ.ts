@@ -82,17 +82,6 @@ export type FacilityType =
   | 'defense_hub'
   | 'cultural_site';
 
-export interface FreightCorridor {
-  id: string;
-  name: string;
-  fromCityId: string;
-  toCityId: string;
-  annualMillionTons: number;
-  mode: 'container' | 'industrial' | 'hightech' | 'energy' | 'air_sea';
-  commodityLabel: string;
-  curveOffsetKm?: number;
-}
-
 export interface CityRawRecord {
   id: string;
   name: string;
@@ -188,7 +177,7 @@ export interface CityComputed extends CityRawRecord {
   lifeExpectancy: number;
   /** 평균 주택 3.3m²당 가격 (만원, 한국부동산원 기준) */
   housingPriceManwon: number;
-  /** 연간 화물 발생·처리 물동량 지수 (백만톤/년, KTDB·항만·공항 통합) */
+  /** 연간 화물 물동량 추정치 (백만톤/년). 원자료 출처 미확인 */
   freightVolumeMt: number;
   /** 면적 (km², 격자 기반 계산 후 갱신) */
   areaKm2: number;
@@ -298,7 +287,6 @@ export interface LayerVisibility {
   universities: boolean;
   defenseHubs: boolean;
   culturalSites: boolean;
-  freightFlows: boolean;
   rivers: boolean;
   railways: boolean;
   provinceBorders: boolean;
@@ -318,6 +306,8 @@ export interface GridStats {
   naturalWondersCount: number;
   academicWondersCount: number;
   culturalWondersCount: number;
+  /** 칸별 인구 비중을 격자 인구 원자료로 나눈 시·군 수 (나머지는 추정 가중) */
+  gridPopulationCities: number;
 }
 
 export interface DataSourceInfo {

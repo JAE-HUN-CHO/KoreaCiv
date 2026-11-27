@@ -295,7 +295,7 @@ export const NATIONAL_INDUSTRY_SHARES: Record<IndustryKey, number> = (() => {
 })();
 
 /**
- * 주요 거점 시·군 실측 기준 앵커 (국세청 근로소득 · 인구총조사 대졸+ · 종교인구 · 생명표 기대수명 · 부동산원 3.3m²당가 · KTDB 화물물동량)
+ * 주요 거점 시·군 실측 기준 앵커 (국세청 근로소득 · 인구총조사 대졸+ · 종교인구 · 생명표 기대수명 · 부동산원 3.3m²당가 · 화물물동량은 출처 미확인 추정)
  */
 const CITY_SOCIO_ANCHORS: Partial<
   Record<

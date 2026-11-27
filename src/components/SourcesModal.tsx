@@ -116,7 +116,7 @@ export const SourcesModal: React.FC<SourcesModalProps> = ({ stats, onClose }) =>
             </div>
           </section>
 
-          {/* 20개 공공데이터 원천 표 + 공식 포털 링크 */}
+          {/* 데이터 원천 표 + 공식 포털 링크 */}
           <section className="border-b border-[#1E2F42] pb-4">
             <h3 className="mb-2.5 text-sm font-semibold text-[#F0DFB3]">
               03. {DATA_SOURCES.length}개 공공데이터 출처 (클릭 시 공식 포털 이동)

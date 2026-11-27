@@ -19,5 +19,22 @@
         "license": "CC BY 4.0"
       }
     ]
+  },
+  "population": {
+    "output": "src/data/generated/hexPopulation.json",
+    "generatedAt": "2026-11-27T06:28:26Z",
+    "cells": 4808,
+    "rasterTotal": 51269183,
+    "hexTotal": 51267704,
+    "sources": [
+      {
+        "name": "WorldPop 2020 Constrained, UN adjusted",
+        "url": "https://hub.worldpop.org/geodata/summary?id=49761",
+        "file": "https://data.worldpop.org/GIS/Population/Global_2000_2020_Constrained/2020/BSGM/KOR/kor_ppp_2020_UNadj_constrained.tif",
+        "resolution": "100m (3 arc-second)",
+        "license": "CC BY 4.0",
+        "note": "SGIS 격자 인구 대체. 앱은 시·군 안의 칸별 비중으로만 씀"
+      }
+    ]
   }
 }

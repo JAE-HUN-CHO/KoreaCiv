@@ -45,7 +45,6 @@ interface LensSidebarProps {
 const LAYER_OPTIONS: { key: keyof LayerVisibility; label: string; dotColor?: string }[] = [
   { key: 'cityBanners', label: '도시 배너' },
   { key: 'wonders', label: '불가사의 (Top 15)', dotColor: '#F7DA82' },
-  { key: 'freightFlows', label: '화물 물류 흐름 (KTDB)', dotColor: '#67DAF0' },
   { key: 'culturalSites', label: '문화유산 · 박물관 · 랜드마크 (30)', dotColor: '#E080C0' },
   { key: 'defenseHubs', label: '안보 · 전략 권역 (10)', dotColor: '#95B574' },
   { key: 'powerPlants', label: '발전소 (≥500MW)', dotColor: '#F5B547' },

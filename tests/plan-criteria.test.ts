@@ -9,6 +9,7 @@ import fs from 'node:fs';
 import { describe, it } from 'node:test';
 import { getKoreaCivWorld, rebuildWorldWithLiveApiData } from '../src/engine/hexGrid';
 import { CIV_RULES } from '../src/data/rules';
+import { lookupHexGridPopulation } from '../src/data/populationData';
 import { lookupHexTerrain } from '../src/data/terrainData';
 import type { KoreaCivWorld } from '../src/engine/hexGrid';
 import type { LiveBootstrapResponse } from '../src/services/publicApis';
@@ -123,6 +124,43 @@ for (const [label, build] of worlds) {
           assert.equal(failures.length, 0, `0.1% 초과 ${failures.length}곳: ${failures.slice(0, 5).join(', ')}`);
         });
       }
+    });
+
+    describe('M2 격자 인구 반영', () => {
+      it('시·군의 95% 이상이 격자 인구 비중으로 칸을 나눔', () => {
+        const n = world.stats.gridPopulationCities;
+        const total = world.cities.filter((c) => c.hexCount > 0).length;
+        assert.ok(n / total >= 0.95, `격자 인구 사용 ${n}/${total}`);
+      });
+
+      it('인구 100만 이상 시·군은 칸 3개 이상 (경계 누락 감지. 수원 121km²가 약 5칸)', () => {
+        const small = world.cities.filter((c) => c.population >= 1_000_000 && c.hexCount < 3);
+        assert.equal(small.length, 0, small.map((c) => `${c.name} ${c.hexCount}칸`).join(', '));
+      });
+
+      it('칸 인구 비중이 격자 인구 비중과 같음', () => {
+        const byCity = new Map<string, typeof world.hexes>();
+        for (const h of world.hexes) {
+          const list = byCity.get(h.cityId) ?? [];
+          list.push(h);
+          byCity.set(h.cityId, list);
+        }
+        const failures: string[] = [];
+        for (const [cityId, list] of byCity) {
+          const grid = list.map((h) => lookupHexGridPopulation(h.id));
+          const gridSum = grid.reduce((a, b) => a + b, 0);
+          const popSum = list.reduce((a, h) => a + h.population, 0);
+          if (gridSum === 0 || popSum < 10_000) continue;
+          list.forEach((h, i) => {
+            const expected = (grid[i] / gridSum) * popSum;
+            // 칸 인구는 정수로 반올림되므로 1명 + 0.5% 여유
+            if (Math.abs(h.population - expected) > 1 + expected * 0.005) {
+              failures.push(`${cityId} ${h.id}: ${h.population} / 기대 ${expected.toFixed(0)}`);
+            }
+          });
+        }
+        assert.equal(failures.length, 0, failures.slice(0, 5).join(', '));
+      });
     });
 
     describe('M3 도시와 지구', () => {
