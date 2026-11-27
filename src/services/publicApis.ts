@@ -1,3 +1,5 @@
+import { KOSIS_SNAPSHOT_END_YEAR, KOSIS_SNAPSHOT_START_YEAR } from './snapshotConfig';
+
 import type { ProvinceCode } from '../types/civ';
 import { latLonToKm, type Point2D } from '../data/koreaGeography';
 
@@ -5,6 +7,10 @@ export interface ApiStatusResponse {
   sgis: boolean;
   kosis: boolean;
   vworld: boolean;
+  /** 정적 배포(GitHub Pages) 빌드 여부. true면 /api 대신 빌드 시점 스냅샷 JSON을 읽음 */
+  staticMode?: boolean;
+  /** 스냅샷 생성 시각 (ISO 8601). 스냅샷이 없으면 null */
+  snapshotGeneratedAt?: string | null;
   expectedEnvVars: {
     sgis: string[];
     kosis: string[];
@@ -311,11 +317,77 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   return data;
 }
 
-export function fetchApiStatus(): Promise<ApiStatusResponse> {
-  return fetchJson<ApiStatusResponse>('/api/status');
+// ==================== 정적 배포(GitHub Pages) 모드 ====================
+// Pages에는 server.ts가 없으므로, GitHub Actions가 빌드 직전에 /api 응답을 받아
+// data/*.json으로 저장해 둔다(scripts/snapshot-api.ts). 정적 빌드는 그 파일만 읽는다.
+
+export const IS_STATIC_DEPLOY = import.meta.env.VITE_STATIC_DEPLOY === 'true';
+
+const STATIC_UNSUPPORTED_MESSAGE =
+  '정적 배포(GitHub Pages)에서는 이 실시간 조회를 지원하지 않습니다. 로컬에서 npm run dev로 실행하면 사용할 수 있습니다.';
+
+interface SnapshotManifest {
+  generatedAt: string;
+  files: string[];
+}
+
+let manifestPromise: Promise<SnapshotManifest | null> | null = null;
+
+function snapshotUrl(file: string): string {
+  return `${import.meta.env.BASE_URL}data/${file}`;
+}
+
+function loadSnapshotManifest(): Promise<SnapshotManifest | null> {
+  manifestPromise ??= fetch(snapshotUrl('manifest.json'))
+    .then((r) => (r.ok ? (r.json() as Promise<SnapshotManifest>) : null))
+    .catch(() => null)
+    .then((manifest) => {
+      // 실패 결과는 캐시하지 않음 → 네트워크가 돌아오면 다음 호출에서 다시 요청
+      if (!manifest) manifestPromise = null;
+      return manifest;
+    });
+  return manifestPromise;
+}
+
+async function fetchSnapshot<T>(file: string): Promise<T> {
+  const manifest = await loadSnapshotManifest();
+  if (!manifest?.files.includes(file)) {
+    throw new Error('이 데이터의 스냅샷이 아직 없습니다 (GitHub Actions 정기 수집 대기 중).');
+  }
+  return fetchJson<T>(snapshotUrl(file));
+}
+
+function staticUnsupported(): Promise<never> {
+  return Promise.reject(new Error(STATIC_UNSUPPORTED_MESSAGE));
+}
+
+const EXPECTED_ENV_VARS: ApiStatusResponse['expectedEnvVars'] = {
+  sgis: ['SGIS_CONSUMER_KEY', 'SGIS_CONSUMER_SECRET'],
+  kosis: ['KOSIS_API_KEY'],
+  vworld: ['VWORLD_API_KEY'],
+};
+
+export async function fetchApiStatus(): Promise<ApiStatusResponse> {
+  if (!IS_STATIC_DEPLOY) {
+    return fetchJson<ApiStatusResponse>('/api/status');
+  }
+  const manifest = await loadSnapshotManifest();
+  const files = manifest?.files ?? [];
+  return {
+    // live-bootstrap.json은 KOSIS 키만 있어도 만들어지므로 SGIS 여부는 sgis-* 파일로 판단
+    sgis: files.some((f) => f.startsWith('sgis-')),
+    kosis: files.some((f) => f.startsWith('kosis-')),
+    vworld: false,
+    staticMode: true,
+    snapshotGeneratedAt: manifest?.generatedAt ?? null,
+    expectedEnvVars: EXPECTED_ENV_VARS,
+  };
 }
 
 export function fetchLiveBootstrap(forceRefresh = false): Promise<LiveBootstrapResponse> {
+  if (IS_STATIC_DEPLOY) {
+    return fetchSnapshot<LiveBootstrapResponse>('live-bootstrap.json');
+  }
   return fetchJson<LiveBootstrapResponse>(
     forceRefresh ? '/api/live/bootstrap?refresh=1' : '/api/live/bootstrap'
   );
@@ -324,6 +396,9 @@ export function fetchLiveBootstrap(forceRefresh = false): Promise<LiveBootstrapR
 export function fetchSgisHistorySnapshot(
   year: '2010' | '2015' | '2020' | '2024'
 ): Promise<SgisHistoryResponse> {
+  if (IS_STATIC_DEPLOY) {
+    return fetchSnapshot<SgisHistoryResponse>(`sgis-history-${year}.json`);
+  }
   const params = new URLSearchParams({ year });
   return fetchJson<SgisHistoryResponse>(`/api/sgis/history?${params.toString()}`);
 }
@@ -332,6 +407,7 @@ export function fetchSgisSubdistricts(
   admCd: string,
   year = '2024'
 ): Promise<SgisSubdistrictsResponse> {
+  if (IS_STATIC_DEPLOY) return staticUnsupported();
   const params = new URLSearchParams({ admCd, year });
   return fetchJson<SgisSubdistrictsResponse>(`/api/sgis/subdistricts?${params.toString()}`);
 }
@@ -341,6 +417,7 @@ export async function fetchSgisBoundaryOverlay(
   label: string,
   year = '2024'
 ): Promise<SgisBoundaryOverlay> {
+  if (IS_STATIC_DEPLOY) return staticUnsupported();
   const params = new URLSearchParams({ admCd, year });
   const data = await fetchJson<{ geojson: unknown; year: string; admCd: string }>(
     `/api/sgis/boundary?${params.toString()}`
@@ -350,9 +427,20 @@ export async function fetchSgisBoundaryOverlay(
 
 export function fetchKosisTimeseries(
   indicator: 'grdp_sido' | 'grdp_pc_sido' | 'pop_sido' | 'aging_sido',
-  startYear = '2018',
-  endYear = '2026'
+  startYear = KOSIS_SNAPSHOT_START_YEAR,
+  endYear = KOSIS_SNAPSHOT_END_YEAR
 ): Promise<KosisTimeseriesResponse> {
+  if (IS_STATIC_DEPLOY) {
+    // 스냅샷은 고정 범위로만 수집하므로 다른 범위 요청은 조용히 다른 데이터를 주지 않고 실패시킴
+    if (startYear !== KOSIS_SNAPSHOT_START_YEAR || endYear !== KOSIS_SNAPSHOT_END_YEAR) {
+      return Promise.reject(
+        new Error(
+          `정적 배포의 KOSIS 시계열은 ${KOSIS_SNAPSHOT_START_YEAR}–${KOSIS_SNAPSHOT_END_YEAR}년 범위만 제공합니다.`
+        )
+      );
+    }
+    return fetchSnapshot<KosisTimeseriesResponse>(`kosis-${indicator}.json`);
+  }
   const params = new URLSearchParams({ indicator, startYear, endYear });
   return fetchJson<KosisTimeseriesResponse>(`/api/kosis/timeseries?${params.toString()}`);
 }
@@ -362,6 +450,7 @@ export function searchKosisTables(q: string): Promise<{
   query: string;
   items: KosisSearchItem[];
 }> {
+  if (IS_STATIC_DEPLOY) return staticUnsupported();
   const params = new URLSearchParams({ q });
   return fetchJson(`/api/kosis/search?${params.toString()}`);
 }
@@ -376,6 +465,7 @@ export function searchVWorldPlaces(
   mode: string;
   results: GeocodedPlaceResult[];
 }> {
+  if (IS_STATIC_DEPLOY) return staticUnsupported();
   const params = new URLSearchParams({ q, mode });
   return fetchJson(`/api/vworld/search?${params.toString()}`);
 }
@@ -397,6 +487,7 @@ export function batchGeocodeVWorld(queries: string[]): Promise<{
   }>;
   failed: string[];
 }> {
+  if (IS_STATIC_DEPLOY) return staticUnsupported();
   return fetchJson('/api/vworld/batch-geocode', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -405,6 +496,7 @@ export function batchGeocodeVWorld(queries: string[]): Promise<{
 }
 
 export function reverseGeocodeVWorld(lat: number, lon: number): Promise<VWorldReverseResult> {
+  if (IS_STATIC_DEPLOY) return staticUnsupported();
   const params = new URLSearchParams({
     lat: lat.toFixed(6),
     lon: lon.toFixed(6),

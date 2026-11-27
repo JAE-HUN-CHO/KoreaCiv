@@ -10,6 +10,24 @@ export default defineConfig(() => {
     base: process.env.VITE_BASE || '/',
     plugins: [
       react(),
+      // 링크 미리보기(og:image)는 절대 URL이 필요해 배포 주소(VITE_SITE_URL)가 있을 때만 주입
+      {
+        name: 'inject-og-image',
+        transformIndexHtml(html: string): string {
+          const siteUrl = process.env.VITE_SITE_URL?.trim();
+          if (!siteUrl) return html;
+          const base = siteUrl.endsWith('/') ? siteUrl : `${siteUrl}/`;
+          const tags = [
+            `<meta property="og:url" content="${base}" />`,
+            `<meta property="og:image" content="${base}og-image.jpg" />`,
+            '<meta property="og:image:width" content="1200" />',
+            '<meta property="og:image:height" content="630" />',
+            '<meta property="og:image:alt" content="KoreaCiv — 대한민국 문명 지도" />',
+            `<meta name="twitter:image" content="${base}og-image.jpg" />`,
+          ].join('\n    ');
+          return html.replace('</head>', `    ${tags}\n  </head>`);
+        },
+      },
       tailwindcss(),
       // Copies src/assets into dist/ so root-relative URLs like
       // "/src/assets/images/..." (e.g. generate_image output) still resolve
@@ -21,8 +39,8 @@ export default defineConfig(() => {
           if (error) {
             return;
           }
-          const distDir = path.resolve(__dirname, 'dist');
-          const srcAssets = path.resolve(__dirname, 'src/assets');
+          const distDir = path.resolve(import.meta.dirname, 'dist');
+          const srcAssets = path.resolve(import.meta.dirname, 'src/assets');
           const distAssets = path.resolve(distDir, 'src/assets');
           if (fs.existsSync(distDir) && fs.existsSync(srcAssets)) {
             fs.cpSync(srcAssets, distAssets, {recursive: true, force: true});
@@ -32,7 +50,7 @@ export default defineConfig(() => {
     ],
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, '.'),
+        '@': path.resolve(import.meta.dirname, '.'),
       },
     },
     server: {

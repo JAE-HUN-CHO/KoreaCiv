@@ -1,0 +1,92 @@
+# KoreaCiv — 대한민국 문명 지도
+
+남한 전역을 5km 육각 격자로 덮고, 공공통계를 Civilization 게임 용어(Gold, Production, 지구, 불가사의 등)로 바꿔 보여주는 인터랙티브 지도입니다.
+
+**사이트**: https://jae-hun-cho.github.io/KoreaCiv/
+
+![KoreaCiv 미리보기](public/og-image.jpg)
+
+## 기능
+
+| 화면 | 내용 |
+| --- | --- |
+| 지도 | 5km 육각 격자 약 4,800칸, 시·군 161곳 배너, 시설 아이콘. 칸에 마우스를 올리면 지형·산출량·소속 시군구 표시 |
+| 렌즈 | 20개. 지형, GRDP, 1인당 GRDP, 인구밀도, 제조업 비중, 고령화, 발전 설비, 대학 연구비, 재해 피해액, 역사(2010~2024 인구 변화) 등 |
+| City View | 시·군 하나의 인구, GRDP, 지구(District), 시민 구성("N명 중 1명"). 두 도시 나란히 비교 |
+| 자문관 | 경제·산업·과학 등 9개 분야별 전국 요약 |
+| 탐색기 | 시·군 지표 두 개를 골라 산점도와 표로 비교. 점을 누르면 지도에서 강조 |
+| 불가사의 | 국립공원 탐방객, 대학 연구비, 문화유산 기준 상위 5곳씩 |
+| 실시간 API | SGIS·KOSIS·VWorld 조회 (로컬 실행 시. 정적 배포에서는 스냅샷만) |
+| 출처 패널 | 우측 상단 "출처·규칙". 항목별 출처, 기준연도, 추정 여부, 제외 항목 |
+
+변환 규칙(입지계수 1.5 이상이면 지구 부여 등)은 [`PLAN.md`](PLAN.md) 4절과 `src/data/rules.ts`의 `CIV_RULES`에 있습니다.
+
+## 로컬 실행
+
+Node.js 22 이상이 필요합니다.
+
+```bash
+npm install
+```
+
+```bash
+npm run dev
+```
+
+http://localhost:3000 에서 열립니다. `server.ts`(Express)가 화면과 `/api/*` 프록시를 함께 띄웁니다.
+
+공공 API를 쓰려면 `.env.example`을 `.env`로 복사하고 키를 넣습니다. 키가 없어도 앱은 내장 데이터로 동작합니다.
+
+| 변수 | 용도 | 발급처 |
+| --- | --- | --- |
+| `SGIS_CONSUMER_KEY`, `SGIS_CONSUMER_SECRET` | 행정경계, 센서스 인구 | [SGIS 오픈 API](https://sgis.kostat.go.kr/developer/html/main.html) |
+| `KOSIS_API_KEY` | GRDP, 주민등록인구, 고령화율 시계열 | [KOSIS](https://kosis.kr) |
+| `VWORLD_API_KEY` | 장소 검색, 지오코딩 | [VWorld](https://www.vworld.kr) |
+
+키는 서버에서만 읽고 브라우저로 보내지 않습니다.
+
+## 명령어
+
+| 명령 | 하는 일 |
+| --- | --- |
+| `npm run dev` | 개발 서버 (Vite + API 프록시) |
+| `npm run build` | `dist/`로 정적 빌드 |
+| `npm start` | `dist/`와 API 프록시를 함께 서빙 (`NODE_ENV=production` 필요) |
+| `npm test` | [`PLAN.md`](PLAN.md) 단계별 완료 기준 검사 |
+| `npm run lint` | TypeScript 타입 검사 |
+| `npm run snapshot` | 공공 API 응답을 `public/data/*.json`으로 저장 (정적 배포용) |
+
+## 배포 (GitHub Pages)
+
+`.github/workflows/deploy-pages.yml`이 `main`에 push할 때와 매일 03:17(KST)에 배포합니다.
+
+1. `npm run snapshot`: `server.ts`를 잠깐 띄워 SGIS·KOSIS 응답 9개를 JSON으로 저장
+2. `npm test`: 완료 기준 검사. 실패하면 배포하지 않음
+3. `VITE_STATIC_DEPLOY=true`로 빌드: 앱이 `/api` 대신 저장된 JSON을 읽음
+4. Pages에 배포
+
+Pages에는 서버가 없어서, 키가 필요한 즉석 조회(SGIS 자치구 조회, KOSIS 통계표 검색, VWorld 검색)는 꺼집니다. 스냅샷을 받으려면 저장소 Settings → Secrets and variables → Actions에 `SGIS_CONSUMER_KEY`, `SGIS_CONSUMER_SECRET`, `KOSIS_API_KEY`를 등록합니다. 등록하지 않으면 내장 데이터로 배포됩니다.
+
+## 데이터에 대해 알아둘 점
+
+- 시·군 통계 대부분은 공공통계를 참고해 `src/data/*.ts`에 직접 입력한 값입니다. 출처와 기준연도는 출처 패널에 있습니다.
+- 정적 배포에서는 SGIS 2024 행정경계와 KOSIS 최신 인구·GRDP가 스냅샷으로 덮어써집니다.
+- **지형(표고·기복), 토지피복, 권역 간 화물 물동량은 추정치입니다.** 원자료(DEM, 토지피복지도, 국가교통DB)를 집계한 값이 아니며, 화면과 출처 패널에 "추정"으로 표시돼 있습니다.
+- 기획서와 현재 구현의 차이는 [`REPORT.md`](REPORT.md)에 정리돼 있습니다.
+
+## 폴더 구조
+
+```
+server.ts                 Express 서버: 화면 서빙 + 공공 API 프록시
+scripts/snapshot-api.ts   정적 배포용 API 스냅샷 수집
+src/
+  App.tsx                 화면 상태와 탭 구성
+  components/             지도 캔버스, 렌즈 사이드바, City View, 각 탭 패널
+  engine/hexGrid.ts       격자 생성, 지형 판정, 통계 배분
+  engine/history.ts       역사 렌즈 (센서스 연도별 비교)
+  data/                   시·군 통계, 시설, 지형 모델, 변환 규칙(rules.ts)
+  services/publicApis.ts  API 호출 (정적 모드에서는 스냅샷 읽기)
+tests/                    PLAN.md 완료 기준 테스트
+PLAN.md                   기획서
+REPORT.md                 기획서 대비 현재 상태
+```

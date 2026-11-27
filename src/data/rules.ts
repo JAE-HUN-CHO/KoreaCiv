@@ -462,7 +462,7 @@ export const LENS_DEFINITIONS: LensDefinition[] = [
     category: 'core',
     unit: '표고 m',
     description: '토지피복 대분류(시가화·농업·산림·초지·습지)와 DEM 기복(구릉 ≥300m, 산악 ≥600m)을 결합한 기본 문명 지도입니다.',
-    sourceLabel: '국토지리정보원 DEM · 기후에너지환경부 토지피복',
+    sourceLabel: '추정 · 합성 표고 모델과 인구밀도 기반 피복 추정 (DEM·토지피복 원자료 미반영)',
     legendStops: [
       { color: '#8E8477', label: '시가화' },
       { color: '#97A857', label: '농업' },
@@ -737,7 +737,7 @@ export const LENS_DEFINITIONS: LensDefinition[] = [
     category: 'infra',
     unit: '백만톤/년',
     description: '항만·공항·내륙물류기지 및 권역 간 화물 OD(경부축·서해안축·반도체축) 물동량 흐름을 시각화합니다.',
-    sourceLabel: '국토교통부 국가교통DB(KTDB) · 해양수산부 PORT-MIS',
+    sourceLabel: '추정 · 원자료 출처 미확인 (KTDB 화물 OD 원자료 미반영)',
     legendStops: [
       { color: '#162333', label: '< 5Mt' },
       { color: '#1F465E', label: '15Mt' },
