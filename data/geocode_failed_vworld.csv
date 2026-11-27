@@ -41,6 +41,10 @@ pp_gunsan_lng,군산복합화력,power_plant,35.962,126.621,미검색,,
 pp_jeju_wind,제주 복합·해상풍력 클러스터,power_plant,33.541,126.632,불일치,10.4,나라키움제주복합관사
 port_pyeongtaek,평택·당진항,port,36.968,126.826,불일치,8.7,가마치통닭 평택 안중점
 port_jeju,제주항,port,33.524,126.542,불일치,436.1,제주항
+port_taean,태안항 (안흥항),port,36.681,126.153,미검색,,
+port_hadong,하동항,port,34.965,127.797,불일치,6.0,노량항
+port_tongyeong,통영항,port,34.84,128.42,불일치,304.2,통영항
+port_sokcho,속초항,port,38.2,128.584,불일치,82.9,속초항 한마리동태찌개
 ap_tae,대구국제공항 (TAE),airport,35.894,128.659,오류,,place 검색 실패: Invalid control character at: line 1 column 737 (char 736)
 mine_donghae_ls,동해·삼척 석회석 광업지대,mine,37.465,129.055,불일치,8.1,IBK기업은행 동해
 mine_danyang_ls,단양 석회석 광산 벨트,mine,37.015,128.362,미검색,,

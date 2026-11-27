@@ -1,21 +1,21 @@
 {
-  "generatedAt": "2026-11-27T07:46:36Z",
+  "generatedAt": "2026-11-27T15:41:08Z",
   "geocoder": "OpenStreetMap Nominatim",
   "matchRadiusKm": 5.0,
-  "checked": 140,
-  "succeeded": 96,
-  "successRate": 0.6857,
+  "checked": 478,
+  "succeeded": 377,
+  "successRate": 0.7887,
   "skipped": {
     "defense_hub": "도시 단위 좌표만 쓰므로 제외"
   },
   "byType": {
     "national_park": {
       "checked": 23,
-      "ok": 17
+      "ok": 18
     },
     "university": {
-      "checked": 24,
-      "ok": 24
+      "checked": 347,
+      "ok": 295
     },
     "cultural_site": {
       "checked": 30,
@@ -26,8 +26,8 @@
       "ok": 9
     },
     "port": {
-      "checked": 12,
-      "ok": 8
+      "checked": 27,
+      "ok": 17
     },
     "airport": {
       "checked": 15,
