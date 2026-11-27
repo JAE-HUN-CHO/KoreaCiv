@@ -5,10 +5,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# 기본은 읽기 전용. Pages 배포에 필요한 쓰기 권한은 deploy 작업에만 부여
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
@@ -34,6 +33,9 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      pages: write # Pages에 아티팩트 배포
+      id-token: write # deploy-pages가 OIDC 토큰으로 배포 인증
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
