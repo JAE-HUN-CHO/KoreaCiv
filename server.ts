@@ -1944,10 +1944,19 @@ async function startServer() {
         `https://api.odcloud.kr/api/15055477/v1/uddi:258813a2-0792-4c49-9b7f-b6ba24ed689e?${busanParams.toString()}`,
         { signal: AbortSignal.timeout(10_000) }
       );
+      if (!busanResp.ok) {
+        res.status(502).json({ error: `부산항만공사 API 오류 (HTTP ${busanResp.status})` });
+        return;
+      }
       const busanData = (await busanResp.json()) as {
         data?: Array<Record<string, number | string>>;
       };
       const busanRows = busanData.data ?? [];
+      if (busanRows.length === 0) {
+        // 빈 결과를 정상 0으로 캐시하면 일시적 오류가 영구 0톤으로 남으므로 캐시 없이 바로 실패
+        res.status(502).json({ error: '부산항만공사 API가 빈 응답을 반환했습니다.' });
+        return;
+      }
       const busanMaxYear = busanRows.reduce(
         (max, r) => Math.max(max, Number(r.연도 ?? 0)),
         0
@@ -1957,7 +1966,7 @@ async function startServer() {
         .reduce((sum, r) => sum + (Number(r.총계) || 0), 0);
 
       let incheonYear = new Date().getFullYear() - 1;
-      let incheonTotalTons = 0;
+      let incheonTotalTons: number | null = null;
       for (let tries = 0; tries < 2; tries++) {
         const incheonParams = new URLSearchParams({
           serviceKey: cfg.dataGoKrKey,
@@ -1969,14 +1978,27 @@ async function startServer() {
           `https://apis.data.go.kr/B551504/ipaGtqyProcessAcmslt/getAllFrghtGtqyFyer?${incheonParams.toString()}`,
           { signal: AbortSignal.timeout(10_000) }
         );
+        if (!incheonResp.ok) {
+          res.status(502).json({ error: `인천항만공사 API 오류 (HTTP ${incheonResp.status})` });
+          return;
+        }
         // type=json을 줘도 XML만 반환함 (해양수산부 컨테이너처리실적 API와 동일한 특성)
         const incheonXml = await incheonResp.text();
+        if (incheonXml.match(/<resultCode>([^<]*)<\/resultCode>/)?.[1] !== '00') {
+          res.status(502).json({ error: '인천항만공사 API 응답 코드가 정상이 아닙니다.' });
+          return;
+        }
         const totalCargoStr = incheonXml.match(/<totalCargo>([^<]*)<\/totalCargo>/)?.[1];
         if (totalCargoStr) {
           incheonTotalTons = Number(totalCargoStr) || 0;
           break;
         }
-        incheonYear -= 1; // 최신 연도 데이터가 아직 없으면 전년도로 재시도
+        incheonYear -= 1; // 해당 연도 데이터가 아직 없으면(resultCode는 정상) 전년도로 재시도
+      }
+      if (incheonTotalTons === null) {
+        // 두 연도 모두 데이터가 없음 — 0톤으로 캐시하지 않고 실패로 알림
+        res.status(502).json({ error: '인천항만공사 최근 2개 연도 데이터를 찾지 못했습니다.' });
+        return;
       }
 
       const payload = {
@@ -2057,7 +2079,15 @@ async function startServer() {
         `https://apis.data.go.kr/B340014/BasicInformationService_2/getUniversityCode?${codeParams.toString()}`,
         { signal: AbortSignal.timeout(12_000) }
       );
+      if (!codeResp.ok) {
+        res.status(502).json({ error: `대학알리미 학교코드 API 오류 (HTTP ${codeResp.status})` });
+        return;
+      }
       const codeXml = await codeResp.text();
+      if (codeXml.match(/<resultCode>([^<]*)<\/resultCode>/)?.[1] !== '00') {
+        res.status(502).json({ error: '대학알리미 학교코드 API 응답 코드가 정상이 아닙니다.' });
+        return;
+      }
       const schools: Array<{ schlId: string; schlKrnNm: string; clgcpDivCd: string }> = [];
       for (const itemMatch of codeXml.matchAll(/<item>([\s\S]*?)<\/item>/g)) {
         const row: Record<string, string> = {};
@@ -2067,6 +2097,12 @@ async function startServer() {
         if (row.schlId && row.schlKrnNm) {
           schools.push({ schlId: row.schlId, schlKrnNm: row.schlKrnNm, clgcpDivCd: row.clgcpDivCd ?? '' });
         }
+      }
+      if (schools.length === 0) {
+        // resultCode는 정상인데 학교 목록이 비면 캐시하지 않고 바로 실패
+        // (일시적 빈 응답이 "학교 404개 전부 매칭 실패"로 영구 캐시되는 것을 막음)
+        res.status(502).json({ error: '대학알리미 학교코드 목록이 비어 있습니다.' });
+        return;
       }
 
       const results = await runWithConcurrency(UNIVERSITY_IDS_FOR_RESEARCH, 4, async (univ) => {
