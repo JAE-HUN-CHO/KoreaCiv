@@ -24,6 +24,7 @@ import json
 import math
 import os
 import sys
+import time
 import urllib.error
 import urllib.request
 from datetime import datetime, timezone
@@ -62,6 +63,7 @@ WC_URL = (
 )
 WC_TILES = [(33, 123), (33, 126), (33, 129), (36, 123), (36, 126), (36, 129)]
 WC_DECIMATION = 8  # 10m → 약 80m
+FETCH_RETRIES = 3  # 다운로드 실패 시 최대 시도 횟수
 
 # 앱의 TerrainType 순서. PLAN.md 4절 대응표
 TERRAINS = ["urban", "farmland", "forest", "grassland", "marsh", "barren", "water"]
@@ -137,13 +139,22 @@ def fetch(url: str, dest: str) -> bool:
     """같은 파일이 있으면 다시 받지 않음 (PLAN.md 5절 원칙)"""
     if os.path.exists(dest):
         return True
-    try:
-        with urllib.request.urlopen(url, timeout=120) as resp:
-            data = resp.read()
-    except urllib.error.HTTPError as e:
-        if e.code in (403, 404):  # 바다만 있는 타일은 없음
-            return False
-        raise
+    data = None
+    for attempt in range(FETCH_RETRIES):
+        try:
+            with urllib.request.urlopen(url, timeout=120) as resp:
+                data = resp.read()
+            break
+        except urllib.error.HTTPError as e:
+            if e.code in (403, 404):  # 바다만 있는 타일은 없음
+                return False
+            if e.code < 500 or attempt == FETCH_RETRIES - 1:
+                raise
+        except (urllib.error.URLError, TimeoutError, ConnectionError):
+            # 연결 끊김·시간 초과는 잠시 쉬었다가 다시 받음
+            if attempt == FETCH_RETRIES - 1:
+                raise
+        time.sleep(5 * (attempt + 1))
     os.makedirs(os.path.dirname(dest), exist_ok=True)
     with open(dest + ".part", "wb") as f:
         f.write(data)

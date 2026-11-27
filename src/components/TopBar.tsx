@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { HelpCircle } from 'lucide-react';
 
 export type WorkspaceTab = 'map' | 'advisors' | 'explorer' | 'wonders' | 'live_api';
@@ -9,12 +9,13 @@ interface TopBarProps {
   onOpenSources: () => void;
 }
 
-const NAV_ITEMS: { id: WorkspaceTab; label: string }[] = [
+// shortLabel: 휴대폰 폭(640px 미만)에서 쓰는 짧은 이름. 다섯 탭이 한 줄에 들어가게 함
+const NAV_ITEMS: { id: WorkspaceTab; label: string; shortLabel?: string }[] = [
   { id: 'map', label: '지도' },
   { id: 'advisors', label: '자문관' },
   { id: 'explorer', label: '탐색기' },
   { id: 'wonders', label: '불가사의' },
-  { id: 'live_api', label: '실시간 API' },
+  { id: 'live_api', label: '실시간 API', shortLabel: 'API' },
 ];
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -22,13 +23,20 @@ export const TopBar: React.FC<TopBarProps> = ({
   onSelectTab,
   onOpenSources,
 }) => {
+  const activeRef = useRef<HTMLButtonElement | null>(null);
+
+  // 탭 줄이 화면보다 넓을 때 고른 탭이 가려지지 않게 보이는 위치로 스크롤
+  useEffect(() => {
+    activeRef.current?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }, [activeTab]);
+
   return (
-    <header className="relative z-30 flex h-13 shrink-0 items-center justify-between gap-3 border-b border-[#223347] bg-[#0B1521]/95 px-3 sm:gap-8 sm:px-5 backdrop-blur-sm">
+    <header className="relative z-30 flex h-13 shrink-0 items-center justify-between gap-2.5 border-b border-[#223347] bg-[#0B1521]/95 px-3 sm:gap-8 sm:px-5 backdrop-blur-sm">
       {/* Zone 1: Single text element wordmark */}
       <button
         type="button"
         onClick={() => onSelectTab('map')}
-        className="font-display shrink-0 cursor-pointer whitespace-nowrap text-lg font-bold tracking-tight text-[#F0DFB3] transition-colors hover:text-[#FFF1CC] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D4A84B]"
+        className="font-display shrink-0 cursor-pointer whitespace-nowrap text-base font-bold sm:text-lg tracking-tight text-[#F0DFB3] transition-colors hover:text-[#FFF1CC] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D4A84B]"
       >
         KoreaCiv
       </button>
@@ -36,14 +44,16 @@ export const TopBar: React.FC<TopBarProps> = ({
       {/* Zone 2: 4 single-line text navigation links */}
       <nav
         aria-label="주요 보기 전환"
-        className="flex min-w-0 flex-1 items-center gap-4 overflow-x-auto text-sm font-medium [scrollbar-width:none] sm:flex-none sm:gap-6"
+        className="flex min-w-0 flex-1 items-center gap-3 overflow-x-auto text-[13px] font-medium [scrollbar-width:none] max-[359px]:[mask-image:linear-gradient(to_right,black_82%,transparent)] sm:flex-none sm:gap-6 sm:text-sm"
       >
         {NAV_ITEMS.map((item) => {
           const isActive = activeTab === item.id;
           return (
             <button
               key={item.id}
+              ref={isActive ? activeRef : undefined}
               type="button"
+              aria-label={item.label}
               onClick={() => onSelectTab(item.id)}
               className={`relative shrink-0 cursor-pointer whitespace-nowrap py-3.5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D4A84B] ${
                 isActive
@@ -51,7 +61,14 @@ export const TopBar: React.FC<TopBarProps> = ({
                   : 'text-[#9CB0C4] hover:text-[#E8E6DF]'
               }`}
             >
-              {item.label}
+              {item.shortLabel ? (
+                <>
+                  <span className="sm:hidden">{item.shortLabel}</span>
+                  <span className="hidden sm:inline">{item.label}</span>
+                </>
+              ) : (
+                item.label
+              )}
               {isActive && (
                 <span
                   aria-hidden="true"

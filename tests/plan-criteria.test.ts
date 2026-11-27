@@ -10,7 +10,7 @@ import { describe, it } from 'node:test';
 import { getKoreaCivWorld, rebuildWorldWithLiveApiData } from '../src/engine/hexGrid';
 import { CIV_RULES } from '../src/data/rules';
 import { lookupHexGridPopulation } from '../src/data/populationData';
-import { lookupHexTerrain } from '../src/data/terrainData';
+import { lookupHexTerrain, validateHexTerrainFile } from '../src/data/terrainData';
 import type { KoreaCivWorld } from '../src/engine/hexGrid';
 import type { LiveBootstrapResponse } from '../src/services/publicApis';
 
@@ -92,6 +92,15 @@ for (const [label, build] of worlds) {
         const missing = world.hexes.filter((h) => !lookupHexTerrain(h.id));
         const ratio = 1 - missing.length / world.hexes.length;
         assert.ok(ratio >= 0.99, `집계값 없는 칸 ${missing.length}개 (${(ratio * 100).toFixed(1)}%)`);
+      });
+
+      it('칸의 표고·기복이 집계값과 같음', () => {
+        for (const h of world.hexes) {
+          const real = lookupHexTerrain(h.id);
+          if (!real) continue;
+          assert.equal(h.elevationM, real.elevationM, `${h.id} 표고`);
+          assert.equal(h.reliefM, real.reliefM, `${h.id} 기복`);
+        }
       });
 
       it('결과 칸에 내부 판정 필드가 남지 않음', () => {
@@ -208,3 +217,28 @@ for (const [label, build] of worlds) {
     });
   });
 }
+
+describe('지형 데이터 파일 구조', () => {
+  const file = JSON.parse(fs.readFileSync('src/data/generated/hexTerrain.json', 'utf8'));
+
+  it('생성 파일이 앱이 읽는 구조와 맞음', () => {
+    assert.deepEqual(validateHexTerrainFile(file), []);
+  });
+
+  it('파이프라인의 지형 목록과 생성 파일의 지형 목록이 같음', () => {
+    const py = fs.readFileSync('pipeline/terrain.py', 'utf8');
+    const m = py.match(/^TERRAINS = \[(.*?)\]/m);
+    assert.ok(m, 'pipeline/terrain.py에서 TERRAINS를 찾지 못함');
+    const pyTerrains = [...m[1].matchAll(/"([a-z]+)"/g)].map((x) => x[1]);
+    assert.deepEqual(file.terrains, pyTerrains);
+  });
+
+  it('구조가 어긋나면 오류를 냄', () => {
+    const swapped = { ...file, fields: ['reliefM', 'elevMeanM', 'terrainIndex'] };
+    assert.ok(validateHexTerrainFile(swapped).length > 0, '필드 순서 바뀜을 못 잡음');
+    const unknown = { ...file, terrains: [...file.terrains, 'lava'] };
+    assert.ok(validateHexTerrainFile(unknown).length > 0, '알 수 없는 지형을 못 잡음');
+    const badIndex = { ...file, cells: { '0,0': [10, 20, 99] } };
+    assert.ok(validateHexTerrainFile(badIndex).length > 0, '범위 밖 지형 번호를 못 잡음');
+  });
+});
