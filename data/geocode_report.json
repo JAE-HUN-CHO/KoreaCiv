@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-11-27T16:36:07Z",
+  "generatedAt": "2026-11-27T17:06:08Z",
   "geocoder": "OpenStreetMap Nominatim",
   "matchRadiusKm": 5.0,
-  "checked": 432,
-  "succeeded": 341,
-  "successRate": 0.7894,
+  "checked": 466,
+  "succeeded": 370,
+  "successRate": 0.794,
   "skipped": {
     "defense_hub": "도시 단위 좌표만 쓰므로 제외"
   },
@@ -14,8 +14,8 @@
       "ok": 18
     },
     "university": {
-      "checked": 300,
-      "ok": 259
+      "checked": 334,
+      "ok": 288
     },
     "cultural_site": {
       "checked": 30,

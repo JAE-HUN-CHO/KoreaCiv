@@ -171,6 +171,13 @@ async function main() {
 
   console.log('학교코드 목록 조회...');
   const schools = await fetchSchoolCodes();
+  if (schools.length === 0) {
+    // resultCode는 정상(00)인데 목록이 비는 경우 — API가 일시적으로 빈 성공
+    // 응답을 줄 수 있음. 그대로 진행하면 main()이 0건 대상으로 돌아 기존
+    // universities.json을 빈 배열로 덮어쓰게 되므로 여기서 중단함
+    console.error('학교코드 목록이 비어 있습니다(resultCode는 정상). 기존 파일을 건드리지 않고 중단합니다. 다시 실행하세요.');
+    process.exit(1);
+  }
   const mainCampuses = schools.filter((s) => s.clgcpDivCd === '1');
   console.log(`전체 ${schools.length}건, 본교 ${mainCampuses.length}건`);
 
@@ -228,13 +235,24 @@ async function main() {
           nearestCity = c;
         }
       }
-      // 대학알리미가 알려준 지역(znNm)과 가장 가까운 도시의 지역이 다르면
+      // 대학알리미가 알려준 지역(znNm)에 속한 도시 중 가장 가까운 거리로 확인함
+      // (전국에서 가장 가까운 도시가 아님 — 도 경계 근처 캠퍼스는 다른 도의
+      // 도시가 전국 최근접일 수 있어서, 예: 서울여자대학교는 구리시 중심이
+      // 서울 시내 어느 구보다 가까움). 이 거리가 너무 멀면(50km 넘으면)
       // VWorld가 동명의 다른 장소를 집은 것으로 보고 버림(예: 성남 소재
-      // 을지대학교가 "양양"의 동명 건물로 잘못 지오코딩된 사례)
+      // 을지대학교가 "양양"의 동명 건물로 잘못 지오코딩된 사례 — 148km)
       const expectedProvinces = ZN_NM_TO_PROVINCES[school.znNm];
-      if (expectedProvinces && !expectedProvinces.includes(nearestCity.province)) {
-        regionMismatchCount++;
-        return null;
+      if (expectedProvinces) {
+        let distToExpectedProvince = Infinity;
+        for (const c of RAW_CITIES) {
+          if (!expectedProvinces.includes(c.province)) continue;
+          const d = haversineKm(p.lat, p.lon, c.lat, c.lon);
+          if (d < distToExpectedProvince) distToExpectedProvince = d;
+        }
+        if (distToExpectedProvince > 50) {
+          regionMismatchCount++;
+          return null;
+        }
       }
       return {
         id: `univ_schl${school.schlId}`,

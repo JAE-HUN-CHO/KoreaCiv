@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-11-27T16:36:12Z",
+  "generatedAt": "2026-11-27T17:06:13Z",
   "geocoder": "OpenStreetMap Nominatim ∪ VWorld (둘 중 하나라도 5km 안이면 성공, 대형 시설은 정식 명칭+유형어 일치 시 30km까지 보정)",
-  "checked": 432,
-  "succeeded": 406,
-  "successRate": 0.9398,
+  "checked": 466,
+  "succeeded": 440,
+  "successRate": 0.9442,
   "wideRadiusRescued": [
     {
       "id": "np_palgongsan",
@@ -47,8 +47,8 @@
       "ok": 23
     },
     "university": {
-      "checked": 300,
-      "ok": 300
+      "checked": 334,
+      "ok": 334
     },
     "cultural_site": {
       "checked": 30,
