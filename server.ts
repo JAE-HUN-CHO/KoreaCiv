@@ -1917,6 +1917,202 @@ async function startServer() {
     }
   });
 
+  // 10. data.go.kr: 항만공사별 실시간 화물 물동량(톤) — 부산항만공사(odcloud), 인천항만공사
+  // 참고: 두 곳 다 "총 화물량(톤)" 기준이라, 지도 시설 데이터의 "컨테이너(TEU)" 수치와는
+  // 단위가 달라 그대로 덮어쓰지 않고 참고 자료로만 제공함
+  app.get('/api/datagokr/port-cargo', async (req: Request, res: Response) => {
+    const cfg = getApiConfig();
+    if (!cfg.hasDataGoKr) {
+      res.status(503).json({ error: 'data.go.kr 인증키(DATA_GO_KR_SERVICE_KEY)가 설정되지 않았습니다.' });
+      return;
+    }
+
+    const cacheKey = 'datagokr:portCargo';
+    const cached = cacheGet<unknown>(cacheKey);
+    if (cached) {
+      res.json(cached);
+      return;
+    }
+
+    try {
+      const busanParams = new URLSearchParams({
+        serviceKey: cfg.dataGoKrKey,
+        page: '1',
+        perPage: '200',
+      });
+      const busanResp = await fetch(
+        `https://api.odcloud.kr/api/15055477/v1/uddi:258813a2-0792-4c49-9b7f-b6ba24ed689e?${busanParams.toString()}`,
+        { signal: AbortSignal.timeout(10_000) }
+      );
+      const busanData = (await busanResp.json()) as {
+        data?: Array<Record<string, number | string>>;
+      };
+      const busanRows = busanData.data ?? [];
+      const busanMaxYear = busanRows.reduce(
+        (max, r) => Math.max(max, Number(r.연도 ?? 0)),
+        0
+      );
+      const busanTotalTons = busanRows
+        .filter((r) => Number(r.연도) === busanMaxYear)
+        .reduce((sum, r) => sum + (Number(r.총계) || 0), 0);
+
+      let incheonYear = new Date().getFullYear() - 1;
+      let incheonTotalTons = 0;
+      for (let tries = 0; tries < 2; tries++) {
+        const incheonParams = new URLSearchParams({
+          serviceKey: cfg.dataGoKrKey,
+          pageNo: '1',
+          numOfRows: '20',
+          yyyy: String(incheonYear),
+        });
+        const incheonResp = await fetch(
+          `https://apis.data.go.kr/B551504/ipaGtqyProcessAcmslt/getAllFrghtGtqyFyer?${incheonParams.toString()}`,
+          { signal: AbortSignal.timeout(10_000) }
+        );
+        // type=json을 줘도 XML만 반환함 (해양수산부 컨테이너처리실적 API와 동일한 특성)
+        const incheonXml = await incheonResp.text();
+        const totalCargoStr = incheonXml.match(/<totalCargo>([^<]*)<\/totalCargo>/)?.[1];
+        if (totalCargoStr) {
+          incheonTotalTons = Number(totalCargoStr) || 0;
+          break;
+        }
+        incheonYear -= 1; // 최신 연도 데이터가 아직 없으면 전년도로 재시도
+      }
+
+      const payload = {
+        source: '부산항만공사 · 인천항만공사 (data.go.kr)',
+        note: '총 화물량(톤) 기준 — 지도의 컨테이너(TEU) 수치와 단위가 다름',
+        ports: [
+          { id: 'port_busan', name: '부산항', year: busanMaxYear || null, totalTons: Math.round(busanTotalTons) },
+          { id: 'port_incheon', name: '인천항', year: incheonYear, totalTons: Math.round(incheonTotalTons) },
+        ],
+      };
+      cacheSet(cacheKey, payload, 60 * 60 * 1000);
+      res.json(payload);
+    } catch {
+      res.status(502).json({ error: '항만 물동량 조회 중 오류가 발생했습니다.' });
+    }
+  });
+
+  // 11. data.go.kr: 대학알리미 "전임교원 교외 1인당 연구비" — 24개 대학 매칭
+  // 참고: 대학알리미는 학교아이디(schlId)를 먼저 알아야 호출되는데, 그 조회 API
+  // (getUniversityCode)를 뒤늦게 찾아 이제서야 가능해짐. 다만 이 지표는 "교원
+  // 1인당" 금액이라 지도의 "연간 총 연구비"(억원/년)와 단위가 달라 덮어쓰지
+  // 않고 참고 자료로만 제공함
+  const UNIVERSITY_IDS_FOR_RESEARCH: Array<{ id: string; name: string }> = [
+    { id: 'univ_snu', name: '서울대학교' },
+    { id: 'univ_yonsei', name: '연세대학교' },
+    { id: 'univ_kaist', name: 'KAIST (한국과학기술원)' },
+    { id: 'univ_korea', name: '고려대학교' },
+    { id: 'univ_skku', name: '성균관대학교' },
+    { id: 'univ_hanyang', name: '한양대학교' },
+    { id: 'univ_postech', name: 'POSTECH (포항공과대학교)' },
+    { id: 'univ_pnu', name: '부산대학교' },
+    { id: 'univ_knu', name: '경북대학교' },
+    { id: 'univ_khu', name: '경희대학교' },
+    { id: 'univ_jnu_gj', name: '전남대학교' },
+    { id: 'univ_cnu', name: '충남대학교' },
+    { id: 'univ_unist', name: 'UNIST (울산과학기술원)' },
+    { id: 'univ_cau', name: '중앙대학교' },
+    { id: 'univ_jbnu', name: '전북대학교' },
+    { id: 'univ_inha', name: '인하대학교' },
+    { id: 'univ_cbnu', name: '충북대학교' },
+    { id: 'univ_ajou', name: '아주대학교' },
+    { id: 'univ_gist', name: 'GIST (광주과학기술원)' },
+    { id: 'univ_kangwon', name: '강원대학교' },
+    { id: 'univ_gnu', name: '경상국립대학교' },
+    { id: 'univ_dgist', name: 'DGIST (대구경북과학기술원)' },
+    { id: 'univ_yeungnam', name: '영남대학교' },
+    { id: 'univ_jeju', name: '제주대학교' },
+  ];
+
+  function universityMatchKeyword(name: string): string {
+    const m = name.match(/\(([^)]+)\)/);
+    return (m ? m[1] : name).trim();
+  }
+
+  app.get('/api/datagokr/university-research', async (_req: Request, res: Response) => {
+    const cfg = getApiConfig();
+    if (!cfg.hasDataGoKr) {
+      res.status(503).json({ error: 'data.go.kr 인증키(DATA_GO_KR_SERVICE_KEY)가 설정되지 않았습니다.' });
+      return;
+    }
+
+    const cacheKey = 'datagokr:univResearch';
+    const cached = cacheGet<unknown>(cacheKey);
+    if (cached) {
+      res.json(cached);
+      return;
+    }
+
+    try {
+      const svyYr = '2024';
+      const codeParams = new URLSearchParams({
+        serviceKey: cfg.dataGoKrKey,
+        pageNo: '1',
+        numOfRows: '999',
+        svyYr,
+      });
+      const codeResp = await fetch(
+        `https://apis.data.go.kr/B340014/BasicInformationService_2/getUniversityCode?${codeParams.toString()}`,
+        { signal: AbortSignal.timeout(12_000) }
+      );
+      const codeXml = await codeResp.text();
+      const schools: Array<{ schlId: string; schlKrnNm: string; clgcpDivCd: string }> = [];
+      for (const itemMatch of codeXml.matchAll(/<item>([\s\S]*?)<\/item>/g)) {
+        const row: Record<string, string> = {};
+        for (const tagMatch of itemMatch[1].matchAll(/<(\w+)>([^<]*)<\/\1>/g)) {
+          row[tagMatch[1]] = tagMatch[2];
+        }
+        if (row.schlId && row.schlKrnNm) {
+          schools.push({ schlId: row.schlId, schlKrnNm: row.schlKrnNm, clgcpDivCd: row.clgcpDivCd ?? '' });
+        }
+      }
+
+      const results = await runWithConcurrency(UNIVERSITY_IDS_FOR_RESEARCH, 4, async (univ) => {
+        const kw = universityMatchKeyword(univ.name);
+        const candidates = schools.filter((s) => s.schlKrnNm === kw);
+        const matched = candidates.find((s) => s.clgcpDivCd === '1') ?? candidates[0];
+        if (!matched) {
+          return { ...univ, schlId: null, grantPerFaculty10kKrw: null };
+        }
+        try {
+          const grantParams = new URLSearchParams({
+            serviceKey: cfg.dataGoKrKey,
+            pageNo: '1',
+            numOfRows: '1',
+            schlId: matched.schlId,
+            svyYr,
+          });
+          const grantResp = await fetch(
+            `https://apis.data.go.kr/B340014/EducationResearchService/getComparisonFullTimeFacultyOutsideOfSchoolForPersonResearchGrant?${grantParams.toString()}`,
+            { signal: AbortSignal.timeout(10_000) }
+          );
+          const grantXml = await grantResp.text();
+          const valStr = grantXml.match(/<indctVal1>([^<]*)<\/indctVal1>/)?.[1];
+          return {
+            ...univ,
+            schlId: matched.schlId,
+            grantPerFaculty10kKrw: valStr ? Number(valStr) : null,
+          };
+        } catch {
+          return { ...univ, schlId: matched.schlId, grantPerFaculty10kKrw: null };
+        }
+      });
+
+      const payload = {
+        source: '한국대학교육협의회 대학알리미 (data.go.kr)',
+        note: '전임교원 1인당 교외 연구비(만원) — 지도의 "연간 총 연구비"(억원/년)와 단위가 다름',
+        year: svyYr,
+        universities: results,
+      };
+      cacheSet(cacheKey, payload, 6 * 60 * 60 * 1000);
+      res.json(payload);
+    } catch {
+      res.status(502).json({ error: '대학알리미 연구비 조회 중 오류가 발생했습니다.' });
+    }
+  });
+
   // ==================== Frontend Serving (Vite dev / dist prod) ====================
   if (!IS_PROD) {
     const { createServer: createViteServer } = await import('vite');
