@@ -9,3 +9,4 @@ coverage/
 .cps/
 public/data/
 data/raw/
+__pycache__/
