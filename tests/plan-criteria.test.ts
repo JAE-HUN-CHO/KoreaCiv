@@ -238,6 +238,8 @@ describe('지형 데이터 파일 구조', () => {
     assert.ok(validateHexTerrainFile(swapped).length > 0, '필드 순서 바뀜을 못 잡음');
     const unknown = { ...file, terrains: [...file.terrains, 'lava'] };
     assert.ok(validateHexTerrainFile(unknown).length > 0, '알 수 없는 지형을 못 잡음');
+    const arrayName = { ...file, terrains: [['urban']], cells: { '0,0': [10, 20, 0] } };
+    assert.ok(validateHexTerrainFile(arrayName).length > 0, '문자열이 아닌 지형 이름을 못 잡음');
     const badIndex = { ...file, cells: { '0,0': [10, 20, 99] } };
     assert.ok(validateHexTerrainFile(badIndex).length > 0, '범위 밖 지형 번호를 못 잡음');
   });

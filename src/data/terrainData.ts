@@ -57,7 +57,9 @@ export function validateHexTerrainFile(file: {
   }
   const terrains = Array.isArray(file.terrains) ? file.terrains : [];
   for (const t of terrains) {
-    if (!(TERRAIN_TYPES as readonly string[]).includes(String(t))) errors.push(`알 수 없는 지형 이름: ${String(t)}`);
+    if (typeof t !== 'string' || !(TERRAIN_TYPES as readonly string[]).includes(t)) {
+      errors.push(`알 수 없는 지형 이름: ${JSON.stringify(t)}`);
+    }
   }
   if (typeof file.cells !== 'object' || file.cells === null) {
     errors.push('cells 없음');
