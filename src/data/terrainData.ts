@@ -10,7 +10,8 @@ import hexTerrain from './generated/hexTerrain.json';
 export interface HexTerrainRecord {
   elevationM: number;
   reliefM: number;
-  terrain: TerrainType;
+  /** 토지피복 최다 유형. 표본이 없는 칸은 null (앱이 추정 규칙으로 판정) */
+  terrain: TerrainType | null;
 }
 
 interface HexTerrainFile {
@@ -32,8 +33,7 @@ export const HEX_TERRAIN_META = {
 export function lookupHexTerrain(id: string): HexTerrainRecord | null {
   const cell = data.cells[id];
   if (!cell) return null;
-  const terrain = data.terrains[cell[2]];
-  if (!terrain) return null;
+  const terrain = cell[2] >= 0 ? (data.terrains[cell[2]] ?? null) : null;
   return { elevationM: cell[0], reliefM: cell[1], terrain };
 }
 

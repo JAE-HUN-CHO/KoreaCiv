@@ -399,7 +399,7 @@ export const DATA_SOURCES: DataSourceInfo[] = [
     unit: '10m 피복도를 약 80m로 줄여 칸별 최다 유형 집계',
     refYear: '2021',
     status: 'active',
-    note: '칸 안에서 면적이 가장 큰 유형을 Civilization 기본 지형으로 변환(바다가 절반 넘는 해안 칸은 수역). 환경공간정보서비스 대분류 대신 PLAN.md의 대안 자료를 사용했습니다.',
+    note: '칸 안 육지 피복 중 면적이 가장 큰 유형을 Civilization 기본 지형으로 변환(WorldCover는 바다도 수역으로 세므로 수역은 비교에서 제외). 환경공간정보서비스 대분류 대신 PLAN.md의 대안 자료를 사용했습니다.',
     url: 'https://esa-worldcover.org/',
   },
   {

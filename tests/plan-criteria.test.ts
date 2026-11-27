@@ -15,7 +15,23 @@ import type { LiveBootstrapResponse } from '../src/services/publicApis';
 
 const SNAPSHOT = 'public/data/live-bootstrap.json';
 
-const worlds: Array<[string, () => KoreaCivWorld]> = [['내장 데이터', getKoreaCivWorld]];
+// SGIS 경계가 부족할 때(120개 미만) 내장 격자를 다시 쓰는 경로. 경계 없는 최소 응답으로 재현
+const BOOTSTRAP_WITHOUT_BOUNDARIES: LiveBootstrapResponse = {
+  fetchedAt: '2026-01-01T00:00:00Z',
+  sgisYear: null,
+  kosisPopYear: null,
+  kosisAgingYear: null,
+  kosisGrdpYear: null,
+  provinceBoundaries: [],
+  sigunguBoundaries: [],
+  sgisStats: [],
+  kosisLatest: { grdpBySido: [], grdpPcBySido: [], popRows: [], agingRows: [] },
+};
+
+const worlds: Array<[string, () => KoreaCivWorld]> = [
+  ['내장 데이터', getKoreaCivWorld],
+  ['경계 없는 실시간 응답', () => rebuildWorldWithLiveApiData(BOOTSTRAP_WITHOUT_BOUNDARIES)],
+];
 if (fs.existsSync(SNAPSHOT)) {
   worlds.push([
     'API 스냅샷',
@@ -77,10 +93,14 @@ for (const [label, build] of worlds) {
         assert.ok(ratio >= 0.99, `집계값 없는 칸 ${missing.length}개 (${(ratio * 100).toFixed(1)}%)`);
       });
 
+      it('결과 칸에 내부 판정 필드가 남지 않음', () => {
+        assert.ok(world.hexes.every((h) => !('landCoverTerrain' in h)));
+      });
+
       it('토지피복 칸은 집계된 최다 유형을 그대로 씀', () => {
         for (const h of world.hexes) {
           const real = lookupHexTerrain(h.id);
-          if (real) assert.equal(h.terrain, real.terrain, h.id);
+          if (real?.terrain) assert.equal(h.terrain, real.terrain, h.id);
         }
       });
     });

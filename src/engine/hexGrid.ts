@@ -183,7 +183,7 @@ function resolveHexTerrain(
       elevationM: real.elevationM,
       reliefM: real.reliefM,
       relief: classifyReliefByRule(real.reliefM),
-      landCoverTerrain: real.terrain,
+      landCoverTerrain: real.terrain ?? undefined,
     };
   }
   const elevationM = Math.round(sumElev / SAMPLE_OFFSETS.length);
@@ -445,8 +445,10 @@ function assembleWorldFromCitiesAndHexes(
       const scienceScore =
         ictWorkersTile * 0.08 + city.universityRd100M * frac * 0.25 + city.shares.ictScience * 2;
 
+      // landCoverTerrain은 판정용 내부 값이라 결과 칸에는 넣지 않음
+      const { landCoverTerrain: _landCover, ...seed } = h;
       const tile: HexTile = {
-        ...h,
+        ...seed,
         terrain,
         isCoastal,
         population: Math.round(pop),
@@ -989,6 +991,8 @@ export function rebuildWorldWithLiveApiData(bootstrap: LiveBootstrapResponse): K
       elevationM: h.elevationM,
       reliefM: h.reliefM,
       relief: h.relief,
+      // 원자료 토지피복도 그대로 가져감 (빠뜨리면 추정 규칙으로 다시 판정됨)
+      landCoverTerrain: lookupHexTerrain(h.id)?.terrain ?? undefined,
       cityId: h.cityId,
       province: h.province,
     }));

@@ -9,7 +9,8 @@
 칸마다 계산하는 값
 - elev: 육지 화소 평균 표고 (m)
 - relief: 칸 안 최고 − 최저 표고 (m). PLAN.md 4절 "칸 내 기복"
-- lc: 토지피복 최다 유형 (PLAN.md 4절 "칸 안에서 면적이 가장 큰 유형")
+- lc: 토지피복 최다 유형 (PLAN.md 4절 "칸 안에서 면적이 가장 큰 유형").
+  WorldCover는 바다도 수역으로 세므로 육지 유형 중 최다를 씀. 표본이 없으면 -1
 
 격자 좌표는 앱(src/engine/hexGrid.ts, src/data/koreaGeography.ts)과 같은 식을 씀.
 결과: src/data/generated/hexTerrain.json, data/manifest.json
@@ -77,6 +78,9 @@ WORLDCOVER_TO_TERRAIN = {
     95: "marsh",  # Mangroves → 습지
     100: "grassland",  # Moss and lichen → 초지
 }
+
+
+WATER_IDX = TERRAINS.index("water")
 
 
 def latlon_to_hex(lat: np.ndarray, lon: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
@@ -188,8 +192,9 @@ def aggregate_landcover():
         url = WC_URL.format(lat=lat, lon=lon)
         try:
             src = rasterio.open("/vsicurl/" + url)
-        except rasterio.errors.RasterioIOError:
-            continue
+        except rasterio.errors.RasterioIOError as e:
+            # 6개 타일 모두 육지를 포함하므로 하나라도 못 읽으면 결과가 틀림 → 생성 중단
+            raise RuntimeError(f"WorldCover 타일을 읽지 못했습니다: N{lat}E{lon}") from e
         tiles += 1
         with src:
             rows, cols = src.height // WC_DECIMATION, src.width // WC_DECIMATION
@@ -226,7 +231,18 @@ def main() -> int:
         k = (r + R_OFFSET) * Q_SPAN + (q + Q_OFFSET)
         if ecnt[k] == 0:
             continue  # 육지 화소가 없는 칸 (바다)
-        lc = int(np.argmax(lc_counts[k])) if lc_counts[k].sum() > 0 else TERRAINS.index("water")
+        # 지도에 그리는 칸은 육지 칸이고, WorldCover는 바다도 '수역'으로 셈.
+        # 그래서 육지 유형 중 최다를 고르고, 육지 표본이 전혀 없을 때만 수역으로 둠.
+        # 토지피복 표본 자체가 없으면 -1(자료 없음) → 앱이 그 칸만 추정 규칙으로 판정
+        counts = lc_counts[k]
+        land_counts = counts.copy()
+        land_counts[WATER_IDX] = 0
+        if land_counts.sum() > 0:
+            lc = int(np.argmax(land_counts))
+        elif counts[WATER_IDX] > 0:
+            lc = WATER_IDX
+        else:
+            lc = -1
         cells[f"{q},{r}"] = [
             int(round(esum[k] / ecnt[k])),
             int(round(emax[k] - emin[k])),
