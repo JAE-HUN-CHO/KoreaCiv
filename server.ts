@@ -938,9 +938,14 @@ async function startServer() {
                   corpCnt += Number(row.corp_cnt ?? 0) || 0;
                   totWorker += Number(row.tot_worker ?? 0) || 0;
                 }
+              } else {
+                // ictScience(J+M)·hospitality(I+R)처럼 복수 분류를 합산하는 업종은
+                // 분류 하나라도 실패하면 부분합을 그대로 쓰지 않고 업종 전체를 버림
+                // (기존 가중평균으로 폴백되도록 null 반환)
+                return [indKey, null] as const;
               }
             } catch {
-              // 일부 업종 분류 실패 시 해당 분류만 건너뜀 (0으로 남음)
+              return [indKey, null] as const;
             }
           }
           return [indKey, { corpCnt, totWorker }] as const;
@@ -948,6 +953,7 @@ async function startServer() {
 
         const result: Record<string, { corpCnt: number; totWorker: number; sharePct: number }> = {};
         for (const [indKey, totals] of totalsPerIndustry) {
+          if (!totals) continue;
           result[indKey] = {
             ...totals,
             sharePct: Number(((totals.totWorker / totalEmployeeCnt) * 100).toFixed(2)),
