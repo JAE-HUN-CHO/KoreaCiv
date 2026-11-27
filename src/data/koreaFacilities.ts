@@ -427,10 +427,10 @@ export const DATA_SOURCES: DataSourceInfo[] = [
     id: 'airports',
     item: '전국 공항 수송실적 (Airports)',
     agency: '인천국제공항공사 · 한국공항공사',
-    unit: '전국 15개 상업공항 연간 여객·화물',
+    unit: '전국 15개 상업공항 연간 여객 (화물 실적은 미수록)',
     refYear: '2024',
     status: 'active',
-    note: '인천국제공항(ICN) 및 전국 14개 지방공항 수송 실적 통합',
+    note: '인천국제공항(ICN) 및 전국 14개 지방공항 연간 여객 수. 항공화물 수치는 넣지 않음',
     url: 'https://www.airport.co.kr',
   },
   {
