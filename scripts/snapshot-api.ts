@@ -14,6 +14,7 @@ import 'dotenv/config';
 import { spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import { KOSIS_SNAPSHOT_END_YEAR, KOSIS_SNAPSHOT_START_YEAR } from '../src/services/snapshotConfig';
 
 const PORT = 3999;
 const BASE = `http://127.0.0.1:${PORT}`;
@@ -41,7 +42,7 @@ const TARGETS: Array<{ file: string; url: string; needs: 'sgis' | 'kosis' | 'any
   })),
   ...(['grdp_sido', 'grdp_pc_sido', 'pop_sido', 'aging_sido'] as const).map((ind) => ({
     file: `kosis-${ind}.json`,
-    url: `/api/kosis/timeseries?indicator=${ind}&startYear=2018&endYear=2026`,
+    url: `/api/kosis/timeseries?indicator=${ind}&startYear=${KOSIS_SNAPSHOT_START_YEAR}&endYear=${KOSIS_SNAPSHOT_END_YEAR}`,
     needs: 'kosis' as const,
   })),
 ];

@@ -161,7 +161,7 @@ export const LiveApiPanel: React.FC<LiveApiPanelProps> = ({
     setKosisLoading(true);
     setKosisError(null);
     try {
-      const res = await fetchKosisTimeseries(ind, '2018', '2026');
+      const res = await fetchKosisTimeseries(ind);
       setKosisData(res);
     } catch (err) {
       setKosisError(err instanceof Error ? err.message : 'KOSIS 조회에 실패했습니다.');

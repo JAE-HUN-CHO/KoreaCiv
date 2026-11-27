@@ -1,3 +1,5 @@
+import { KOSIS_SNAPSHOT_END_YEAR, KOSIS_SNAPSHOT_START_YEAR } from './snapshotConfig';
+
 import type { ProvinceCode } from '../types/civ';
 import { latLonToKm, type Point2D } from '../data/koreaGeography';
 
@@ -338,7 +340,12 @@ function snapshotUrl(file: string): string {
 function loadSnapshotManifest(): Promise<SnapshotManifest | null> {
   manifestPromise ??= fetch(snapshotUrl('manifest.json'))
     .then((r) => (r.ok ? (r.json() as Promise<SnapshotManifest>) : null))
-    .catch(() => null);
+    .catch(() => null)
+    .then((manifest) => {
+      // 실패 결과는 캐시하지 않음 → 네트워크가 돌아오면 다음 호출에서 다시 요청
+      if (!manifest) manifestPromise = null;
+      return manifest;
+    });
   return manifestPromise;
 }
 
@@ -420,10 +427,18 @@ export async function fetchSgisBoundaryOverlay(
 
 export function fetchKosisTimeseries(
   indicator: 'grdp_sido' | 'grdp_pc_sido' | 'pop_sido' | 'aging_sido',
-  startYear = '2018',
-  endYear = '2026'
+  startYear = KOSIS_SNAPSHOT_START_YEAR,
+  endYear = KOSIS_SNAPSHOT_END_YEAR
 ): Promise<KosisTimeseriesResponse> {
   if (IS_STATIC_DEPLOY) {
+    // 스냅샷은 고정 범위로만 수집하므로 다른 범위 요청은 조용히 다른 데이터를 주지 않고 실패시킴
+    if (startYear !== KOSIS_SNAPSHOT_START_YEAR || endYear !== KOSIS_SNAPSHOT_END_YEAR) {
+      return Promise.reject(
+        new Error(
+          `정적 배포의 KOSIS 시계열은 ${KOSIS_SNAPSHOT_START_YEAR}–${KOSIS_SNAPSHOT_END_YEAR}년 범위만 제공합니다.`
+        )
+      );
+    }
     return fetchSnapshot<KosisTimeseriesResponse>(`kosis-${indicator}.json`);
   }
   const params = new URLSearchParams({ indicator, startYear, endYear });

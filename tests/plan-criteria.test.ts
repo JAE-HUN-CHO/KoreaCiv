@@ -128,7 +128,7 @@ for (const [label, build] of worlds) {
         }
       });
 
-      it('모든 시설이 지도 칸 안에 배정됨', () => {
+      it('모든 시설이 존재하는 도시를 참조함', () => {
         const cityIds = new Set(world.cities.map((c) => c.id));
         const orphan = world.facilities.filter((f) => !cityIds.has(f.cityId));
         assert.equal(orphan.length, 0, orphan.map((f) => f.name).join(', '));
