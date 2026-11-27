@@ -1891,7 +1891,9 @@ async function startServer() {
       for (const row of items) {
         const areaCd = row.areaCd ?? '';
         const areaNm = row.areaNm ?? '';
-        const total = Number(row.tContnTeuTotal ?? 0) || 0;
+        // eContnTeuTotal = 수입, tContnTeuTotal = 수출 (API 스펙 기준 각각 TEU 합계).
+        // 둘 다 더해야 "수출입 합계"가 됨 — 수출만 더하면 수입 물동량이 빠짐
+        const total = (Number(row.eContnTeuTotal ?? 0) || 0) + (Number(row.tContnTeuTotal ?? 0) || 0);
         if (!areaCd) continue;
         const entry = byRegion.get(areaCd) ?? { areaNm, totalTeu: 0 };
         entry.totalTeu += total;

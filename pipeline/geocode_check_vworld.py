@@ -77,6 +77,12 @@ def query_variants(name: str) -> list[str]:
     return out
 
 
+class VWorldRequestError(Exception):
+    """재시도를 다 썼는데도 VWorld 요청이 실패함 (네트워크 오류·타임아웃 등).
+    이 경우는 "검색 결과 없음"이 아니므로 캐시에 저장하면 안 됨 — 연결이
+    복구된 뒤에도 영구히 미검색으로 잘못 남기 때문."""
+
+
 def vworld_search(q: str, key: str, cache: dict, last_call: list[float]) -> list[dict]:
     if q in cache:
         return cache[q]
@@ -103,16 +109,20 @@ def vworld_search(q: str, key: str, cache: dict, last_call: list[float]) -> list
             }
         )
         req = urllib.request.Request(f"{URL}?{params}")
+        data = None
+        last_err: Exception | None = None
         for attempt in range(3):
             try:
                 with urllib.request.urlopen(req, timeout=20) as resp:
                     data = json.load(resp)
                 break
             except Exception as e:
-                if attempt == 2:
-                    data = {}
-                    break
-                time.sleep(2 * (attempt + 1))
+                last_err = e
+                if attempt < 2:
+                    time.sleep(2 * (attempt + 1))
+        if data is None:
+            # 재시도를 다 썼는데도 실패 — 캐시에 남기지 않고 바로 에러로 알림
+            raise VWorldRequestError(f"{search_type} 검색 실패: {last_err}") from last_err
         result = data.get("response", {}).get("result") or {}
         for item in result.get("items", []):
             try:
@@ -173,14 +183,19 @@ def main() -> int:
             if fac["type"] in SKIP_TYPES:
                 continue
             status, dist, matched = "미검색", None, ""
-            for q in query_variants(fac["name"]):
-                hits = vworld_search(q, key, cache, last_call)
-                s, d, m = judge(fac, hits)
-                if s == "성공":
-                    status, dist, matched = s, d, m
-                    break
-                if s == "불일치" and (dist is None or d < dist):
-                    status, dist, matched = s, d, m
+            try:
+                for q in query_variants(fac["name"]):
+                    hits = vworld_search(q, key, cache, last_call)
+                    s, d, m = judge(fac, hits)
+                    if s == "성공":
+                        status, dist, matched = s, d, m
+                        break
+                    if s == "불일치" and (dist is None or d < dist):
+                        status, dist, matched = s, d, m
+            except VWorldRequestError as e:
+                # 네트워크 오류로 확인 못함 — "미검색"(결과 없음 확인됨)과 구분해서
+                # 캐시도 안 타고 다음 시설로 넘어감 (연결 복구 후 재실행하면 다시 시도됨)
+                status, dist, matched = "오류", None, str(e)
             rows.append(
                 {
                     "id": fac["id"],
