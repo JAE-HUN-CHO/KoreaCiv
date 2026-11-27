@@ -19,6 +19,7 @@ import {
 } from '../data/koreaGeography';
 import { buildComputedCities, RAW_CITIES } from '../data/koreaCities';
 import { KOREA_FACILITIES } from '../data/koreaFacilities';
+import { lookupHexGridPopulation } from '../data/populationData';
 import { classifyReliefByRule, lookupHexTerrain } from '../data/terrainData';
 import type {
   LiveBootstrapResponse,
@@ -374,6 +375,7 @@ function assembleWorldFromCitiesAndHexes(
   let targetPopSum = 0;
   let targetGrdpSum = 0;
   let targetMfgSum = 0;
+  let gridPopCityCount = 0;
 
   for (const city of cities) {
     const cityRawHexes = hexesByCity.get(city.id) ?? [];
@@ -390,7 +392,14 @@ function assembleWorldFromCitiesAndHexes(
     let closestHexId = cityRawHexes[0].id;
     let closestD2 = Infinity;
 
-    for (const h of cityRawHexes) {
+    // 칸별 비중: 격자 인구 원자료가 있으면 그대로 쓰고(PLAN.md 2절),
+    // 시·군 안 모든 칸이 0이면 거리·기복 추정 가중으로 대체
+    const gridPops = cityRawHexes.map((h) => lookupHexGridPopulation(h.id));
+    const useGridPop = gridPops.some((v) => v > 0);
+    if (useGridPop) gridPopCityCount++;
+
+    for (let idx = 0; idx < cityRawHexes.length; idx++) {
+      const h = cityRawHexes[idx];
       const dx = h.x - city.centerX;
       const dy = h.y - city.centerY;
       const d2 = dx * dx + dy * dy;
@@ -400,7 +409,9 @@ function assembleWorldFromCitiesAndHexes(
       }
       const distDecay = Math.exp(-d2 / (2 * sigma * sigma));
       const elevPenalty = h.relief === 'mountain' ? 0.14 : h.relief === 'hills' ? 0.48 : 1.0;
-      const w = (0.12 + 0.88 * distDecay) * elevPenalty * h.landFraction;
+      const w = useGridPop
+        ? gridPops[idx]
+        : (0.12 + 0.88 * distDecay) * elevPenalty * h.landFraction;
       weights.push(w);
       weightSum += w;
     }
@@ -618,6 +629,7 @@ function assembleWorldFromCitiesAndHexes(
     naturalWondersCount: wonders.filter((w) => w.wonderKind === 'natural').length,
     academicWondersCount: wonders.filter((w) => w.wonderKind === 'academic').length,
     culturalWondersCount: wonders.filter((w) => w.wonderKind === 'cultural').length,
+    gridPopulationCities: gridPopCityCount,
   };
 
   return {
@@ -939,7 +951,15 @@ export function rebuildWorldWithLiveApiData(bootstrap: LiveBootstrapResponse): K
   const provByCityId = new Map<string, ProvinceCode>();
   cities.forEach((c) => provByCityId.set(c.id, c.province));
 
-  for (const feat of bootstrap.sigunguBoundaries) {
+  // 특별·광역시는 시도 경계가 곧 도시 경계. 그 시도의 시군구 경계가 통째로 빠진 응답이면
+  // (SGIS 일부 시도 조회 실패) 시도 경계로 대신 채워, 도시가 칸 1개로 줄어드는 일을 막음
+  const sidoWithSigungu = new Set(bootstrap.sigunguBoundaries.map((f) => f.sidoCd));
+  const metroFallbackFeatures = bootstrap.provinceBoundaries
+    .map((f) => ({ ...f, sidoCd: f.sidoCd || f.admCd }))
+    .filter((f) => METRO_SIDO_TO_CITY_ID[f.sidoCd] && !sidoWithSigungu.has(f.sidoCd));
+  const metroFallbackCityIds = new Set(metroFallbackFeatures.map((f) => METRO_SIDO_TO_CITY_ID[f.sidoCd]));
+
+  for (const feat of [...bootstrap.sigunguBoundaries, ...metroFallbackFeatures]) {
     const cityId = resolveSgisCityId(feat.sidoCd, feat.admNm, cityByProvName);
     if (!cityId) continue;
     const province = provByCityId.get(cityId);
@@ -973,8 +993,11 @@ export function rebuildWorldWithLiveApiData(bootstrap: LiveBootstrapResponse): K
     cityBoundariesByCityId.set(cityId, existingRings);
   }
 
-  // SGIS 공식 경계가 충분히 로드되지 않은 경우 기존 폴리곤 지오메트리 유지하되 통계만 갱신
-  const hasOfficialBoundaries = indexedRings.length >= 120;
+  // SGIS 공식 경계가 충분히 로드되지 않은 경우 기존 폴리곤 지오메트리 유지하되 통계만 갱신.
+  // 시도 경계로 대신 채운 링은 세지 않음: 부족한 응답이 대체 링 덕에 충분해 보이면
+  // 경계 없는 도시가 많은 채로 격자를 다시 만들게 됨
+  const fallbackRingCount = indexedRings.filter((r) => metroFallbackCityIds.has(r.cityId)).length;
+  const hasOfficialBoundaries = indexedRings.length - fallbackRingCount >= 120;
 
   if (!hasOfficialBoundaries) {
     const base = getKoreaCivWorld();

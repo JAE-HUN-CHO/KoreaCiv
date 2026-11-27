@@ -148,6 +148,31 @@ async function getSgisAccessToken(forceRefresh = false): Promise<string> {
   return sgisTokenInFlight;
 }
 
+/**
+ * SGIS 응답 1건 받기. 시간 초과·연결 끊김·5xx는 제한 시간을 2배로 늘려 한 번 더 시도.
+ * 한 시도(17개 중 하나)의 경계가 한 번 실패하면 그 시도 전체가 지도에서 빠지므로 재시도함
+ */
+async function fetchSgisJsonWithRetry<T>(url: string, timeoutMs: number): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const resp = await fetch(url, { signal: AbortSignal.timeout(timeoutMs * (attempt + 1)) });
+      if (resp.status >= 500) {
+        lastError = new Error(`SGIS_HTTP_${resp.status}`);
+        continue;
+      }
+      if (!resp.ok) {
+        throw new Error(`SGIS_HTTP_${resp.status}`);
+      }
+      return (await resp.json()) as T;
+    } catch (err) {
+      if (err instanceof Error && err.message.startsWith('SGIS_HTTP_')) throw err;
+      lastError = err;
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error('SGIS_FETCH_FAILED');
+}
+
 async function fetchSgisApi<T extends { errCd?: number; errMsg?: string }>(
   endpointPath: string,
   extraParams: Record<string, string>,
@@ -160,11 +185,7 @@ async function fetchSgisApi<T extends { errCd?: number; errMsg?: string }>(
       accessToken: token,
     });
     const url = `https://sgisapi.kostat.go.kr/OpenAPI3/${endpointPath}?${params.toString()}`;
-    const resp = await fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
-    if (!resp.ok) {
-      throw new Error(`SGIS_HTTP_${resp.status}`);
-    }
-    const raw = (await resp.json()) as T;
+    const raw = await fetchSgisJsonWithRetry<T>(url, timeoutMs);
     if (raw.errCd === -401 && attempt === 0) {
       sgisTokenCache = null;
       continue;

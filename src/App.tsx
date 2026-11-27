@@ -258,12 +258,18 @@ export default function App() {
     universities: false,
     defenseHubs: false,
     culturalSites: false,
-    freightFlows: false,
     rivers: true,
     railways: false,
     provinceBorders: true,
     sigunguBorders: true,
   });
+
+  // 물류 렌즈로 들어올 때 항만·공항 레이어를 켬. 이후 사용자가 끄면 그대로 둠
+  useEffect(() => {
+    if (activeLens === 'freight_logistics') {
+      setLayers((prev) => (prev.ports && prev.airports ? prev : { ...prev, ports: true, airports: true }));
+    }
+  }, [activeLens]);
 
   const handleToggleLayer = useCallback((key: keyof LayerVisibility) => {
     setLayers((prev) => ({ ...prev, [key]: !prev[key] }));

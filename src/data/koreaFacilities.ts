@@ -204,25 +204,6 @@ const RAW_CULTURAL_SITES: Omit<FacilityPoint, 'isWonder' | 'wonderKind' | 'wonde
   { id: 'cul_naju_museum', name: '국립나주박물관 · 영산강 고분군 · 나주읍성', type: 'cultural_site', cityId: 'naju', province: 'jeonnam', lat: 34.971, lon: 126.647, metricValue: 88, metricUnit: '만명/년', metricLabel: '연간 관람객', subCategory: '국립박물관 · 마한·영산강 역사권', sourceNote: '국립나주박물관 · 국가유산청' },
 ];
 
-/**
- * 대한민국 14대 주요 권역 간 화물 물류 흐름 (KTDB 국가교통DB · 해양수산부 PORT-MIS 기반)
- */
-export const KOREA_FREIGHT_CORRIDORS = [
-  { id: 'fc_gyeongbu_south', name: '경부 컨테이너 간선 (부산↔대구)', fromCityId: 'busan', toCityId: 'daegu', annualMillionTons: 124, mode: 'container' as const, commodityLabel: '수출입 컨테이너·기계', curveOffsetKm: -18 },
-  { id: 'fc_gyeongbu_mid', name: '경부 중부축 (대구↔대전)', fromCityId: 'daegu', toCityId: 'daejeon', annualMillionTons: 118, mode: 'container' as const, commodityLabel: '컨테이너·자동차부품', curveOffsetKm: -14 },
-  { id: 'fc_gyeongbu_north', name: '경부 수도권 진입축 (대전↔평택/화성)', fromCityId: 'daejeon', toCityId: 'pyeongtaek', annualMillionTons: 136, mode: 'container' as const, commodityLabel: '수도권 소비재·수출화물', curveOffsetKm: -12 },
-  { id: 'fc_capital_core', name: '수도권 핵심 물류망 (평택↔서울)', fromCityId: 'pyeongtaek', toCityId: 'seoul', annualMillionTons: 148, mode: 'container' as const, commodityLabel: '컨테이너·전자·유통', curveOffsetKm: -10 },
-  { id: 'fc_incheon_seoul', name: '인천항·공항↔수도권 관문축', fromCityId: 'incheon', toCityId: 'seoul', annualMillionTons: 132, mode: 'air_sea' as const, commodityLabel: '항공반도체·수입화물', curveOffsetKm: 12 },
-  { id: 'fc_semi_belt', name: '반도체·배터리 하이테크축 (화성↔이천↔청주)', fromCityId: 'hwaseong', toCityId: 'cheongju', annualMillionTons: 68, mode: 'hightech' as const, commodityLabel: '반도체 웨이퍼·이차전지', curveOffsetKm: 16 },
-  { id: 'fc_incheon_hwaseong', name: '항공수출 반도체 직결축 (화성↔인천공항)', fromCityId: 'hwaseong', toCityId: 'incheon', annualMillionTons: 54, mode: 'hightech' as const, commodityLabel: '초정밀 반도체·바이오', curveOffsetKm: -18 },
-  { id: 'fc_west_petro', name: '서해안 석유화학·철강축 (대산/당진↔평택↔인천)', fromCityId: 'seosan', toCityId: 'incheon', annualMillionTons: 96, mode: 'industrial' as const, commodityLabel: '석유화학·철강·자동차', curveOffsetKm: -28 },
-  { id: 'fc_honam_west', name: '호남 서해안축 (광양항↔군산↔대산)', fromCityId: 'gwangyang', toCityId: 'seosan', annualMillionTons: 82, mode: 'industrial' as const, commodityLabel: '제철·석유화학·곡물', curveOffsetKm: -34 },
-  { id: 'fc_southeast_heavy', name: '동남권 중화학 해안축 (포항↔울산↔부산)', fromCityId: 'pohang', toCityId: 'busan', annualMillionTons: 142, mode: 'industrial' as const, commodityLabel: '철강·석유화학·완성차', curveOffsetKm: 24 },
-  { id: 'fc_south_coastal', name: '남해안 산업벨트축 (부산↔창원↔광양항)', fromCityId: 'busan', toCityId: 'gwangyang', annualMillionTons: 94, mode: 'industrial' as const, commodityLabel: '조선기자재·철강·기계', curveOffsetKm: 22 },
-  { id: 'fc_gangwon_cement', name: '영동 시멘트·광물축 (동해/삼척↔원주↔수도권)', fromCityId: 'donghae', toCityId: 'seoul', annualMillionTons: 52, mode: 'energy' as const, commodityLabel: '시멘트·석회석·발전연료', curveOffsetKm: -16 },
-  { id: 'fc_honam_inland', name: '호남 내륙축 (광주↔전주↔대전)', fromCityId: 'gwangju', toCityId: 'daejeon', annualMillionTons: 48, mode: 'container' as const, commodityLabel: '자동차·농식품·소비재', curveOffsetKm: -14 },
-  { id: 'fc_jeju_sea', name: '제주 해상·항공 물류축 (부산/목포↔제주)', fromCityId: 'mokpo', toCityId: 'jeju_si', annualMillionTons: 34, mode: 'air_sea' as const, commodityLabel: '생필품·감귤·항공화물', curveOffsetKm: -24 },
-];
 
 // 규칙 적용: 국립공원 탐방객 Top 5 → Natural Wonder, 대학 연구비 Top 5 → Academic Wonder, 문화유산 Top 5 → Cultural/Faith Wonder
 const sortedParks = [...RAW_NATIONAL_PARKS].sort((a, b) => b.metricValue - a.metricValue);
@@ -279,7 +260,7 @@ export const KOREA_FACILITIES: FacilityPoint[] = [
 ];
 
 /**
- * 출처 패널 ("?")용 20개 공공데이터 원천 목록 + 공식 포털 링크
+ * 출처 패널 ("?")용 데이터 원천 목록 + 공식 포털 링크
  */
 export const DATA_SOURCES: DataSourceInfo[] = [
   {
@@ -374,12 +355,12 @@ export const DATA_SOURCES: DataSourceInfo[] = [
   },
   {
     id: 'freight_ktdb',
-    item: '권역 간 화물 OD 물동량 (Freight Flows)',
-    agency: '국토교통부 국가교통DB (KTDB)',
-    unit: '14대 간선 화물 흐름 (백만톤/년)',
+    item: '시·군 화물 물동량 (Freight)',
+    agency: '국토교통부 국가교통DB (KTDB) 미반영',
+    unit: '백만톤/년 (추정)',
     refYear: '2023–2024',
     status: 'estimated',
-    note: '추정: KTDB 지역 간 화물 OD는 신청 절차·존 단위를 확인하지 못해 원자료를 쓰지 않았습니다. 14대 간선 물동량은 원자료 출처를 확인하지 못한 추정치입니다.',
+    note: '추정: KTDB 지역 간 화물 OD는 신청 절차·존 단위를 확인하지 못해 쓰지 않았고, 권역 간 흐름선도 지도에서 뺐습니다(PLAN.md 9절 대안). 시·군 물동량은 종사자·항만 여부로 계산한 추정치이며, 물류 렌즈는 항만 물동량과 공항(여객 수 기준)을 함께 보여줍니다.',
     url: 'https://www.ktdb.go.kr',
   },
   {
@@ -401,6 +382,16 @@ export const DATA_SOURCES: DataSourceInfo[] = [
     status: 'active',
     note: '칸 안 육지 피복 중 면적이 가장 큰 유형을 Civilization 기본 지형으로 변환(WorldCover는 바다도 수역으로 세므로 수역은 비교에서 제외). 환경공간정보서비스 대분류 대신 PLAN.md의 대안 자료를 사용했습니다.',
     url: 'https://esa-worldcover.org/',
+  },
+  {
+    id: 'population_grid',
+    item: '격자 인구 분포 (칸별 인구 비중)',
+    agency: 'WorldPop 2020 Constrained, UN 보정 (CC BY 4.0)',
+    unit: '100m 격자 인구를 5km 육각 칸별 합계로 집계',
+    refYear: '2020',
+    status: 'active',
+    note: '시·군 인구 합계는 KOSIS 값을 쓰고, 같은 시·군 안의 칸에는 이 격자 인구 비율대로 나눕니다. SGIS 격자 인구는 별도 자료신청이 필요해 대신 사용했습니다.',
+    url: 'https://hub.worldpop.org/geodata/summary?id=49761',
   },
   {
     id: 'power',
@@ -436,10 +427,10 @@ export const DATA_SOURCES: DataSourceInfo[] = [
     id: 'airports',
     item: '전국 공항 수송실적 (Airports)',
     agency: '인천국제공항공사 · 한국공항공사',
-    unit: '전국 15개 상업공항 연간 여객·화물',
+    unit: '전국 15개 상업공항 연간 여객 (화물 실적은 미수록)',
     refYear: '2024',
     status: 'active',
-    note: '인천국제공항(ICN) 및 전국 14개 지방공항 수송 실적 통합',
+    note: '인천국제공항(ICN) 및 전국 14개 지방공항 연간 여객 수. 항공화물 수치는 넣지 않음',
     url: 'https://www.airport.co.kr',
   },
   {
@@ -475,11 +466,11 @@ export const DATA_SOURCES: DataSourceInfo[] = [
   {
     id: 'vworld_defense',
     item: '지오코딩(VWorld) · 국방 공개권역',
-    agency: '국토교통부 VWorld · 국방부 공개백서',
-    unit: '실시간 장소검색·역지오코딩 · 공개 방위권역 10곳',
-    refYear: '2024–2025',
+    agency: '국토교통부 VWorld · OpenStreetMap Nominatim · 국방부 공개백서',
+    unit: '실시간 장소검색·역지오코딩 · 시설 좌표 검증 · 공개 방위권역 10곳',
+    refYear: '2024–2026',
     status: 'active',
-    note: 'VWorld 실시간 장소/주소 조회 및 보안 규정 준수 공개 안보 거점 표시',
+    note: 'VWorld 실시간 장소/주소 조회(서버 실행 시). 시설 좌표는 Nominatim으로 따로 검증(data/geocode_report.json). 방위권역은 도시 단위로만 표시',
     url: 'https://www.vworld.kr',
   },
 ];
