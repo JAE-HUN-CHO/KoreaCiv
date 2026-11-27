@@ -49,6 +49,7 @@ function getApiConfig() {
     'V_WORLD_KEY',
   ]);
   const vworldDomain = firstNonEmptyEnv(['VWORLD_DOMAIN', 'APP_URL']);
+  const dataGoKrKey = firstNonEmptyEnv(['DATA_GO_KR_SERVICE_KEY', 'DATA_GO_KR_KEY']);
 
   return {
     sgisKey,
@@ -56,9 +57,11 @@ function getApiConfig() {
     kosisKey,
     vworldKey,
     vworldDomain,
+    dataGoKrKey,
     hasSgis: Boolean(sgisKey && sgisSecret),
     hasKosis: Boolean(kosisKey),
     hasVworld: Boolean(vworldKey),
+    hasDataGoKr: Boolean(dataGoKrKey),
   };
 }
 
@@ -447,10 +450,12 @@ async function startServer() {
       sgis: cfg.hasSgis,
       kosis: cfg.hasKosis,
       vworld: cfg.hasVworld,
+      dataGoKr: cfg.hasDataGoKr,
       expectedEnvVars: {
         sgis: ['SGIS_CONSUMER_KEY', 'SGIS_CONSUMER_SECRET'],
         kosis: ['KOSIS_API_KEY'],
         vworld: ['VWORLD_API_KEY'],
+        dataGoKr: ['DATA_GO_KR_SERVICE_KEY'],
       },
     });
   });
@@ -1824,6 +1829,89 @@ async function startServer() {
       res.json(payload);
     } catch {
       res.status(502).json({ error: 'VWorld 역지오코딩 호출 중 오류가 발생했습니다.' });
+    }
+  });
+
+  // 9. data.go.kr: 해양수산부 수출입 컨테이너 처리실적(교역 상대지역별, 연월)
+  // 참고: 이 API는 국내 항만별이 아니라 "교역 상대지역"(일본·극동아시아·동남아시아 등)별
+  // 집계만 제공함 — 지도의 12개 무역항 물동량 수치를 갱신하는 용도로는 쓸 수 없고,
+  // 전국 수출입 컨테이너 물동량의 교역권별 분포를 보여주는 참고 자료로만 연동함.
+  app.get('/api/datagokr/container-by-region', async (req: Request, res: Response) => {
+    const cfg = getApiConfig();
+    if (!cfg.hasDataGoKr) {
+      res.status(503).json({ error: 'data.go.kr 인증키(DATA_GO_KR_SERVICE_KEY)가 설정되지 않았습니다.' });
+      return;
+    }
+
+    const yearRaw = sanitizeQuery(req.query.year, 4);
+    const year = /^20[12][0-9]$/.test(yearRaw) ? yearRaw : String(new Date().getFullYear() - 1);
+    const sym = `${year}01`;
+    const eym = `${year}12`;
+    const cacheKey = `datagokr:container:${year}`;
+    const cached = cacheGet<unknown>(cacheKey);
+    if (cached) {
+      res.json(cached);
+      return;
+    }
+
+    try {
+      const params = new URLSearchParams({
+        serviceKey: cfg.dataGoKrKey,
+        pageNo: '1',
+        numOfRows: '200',
+        sym,
+        eym,
+      });
+      const url = `https://apis.data.go.kr/1192000/SsopCargContnImxprt2/Ym?${params.toString()}`;
+      const resp = await fetch(url, { signal: AbortSignal.timeout(15_000) });
+      if (!resp.ok) {
+        res.status(502).json({ error: `data.go.kr 서버 오류 (HTTP ${resp.status})` });
+        return;
+      }
+      // 이 API는 type=json을 줘도 XML만 반환함. 응답이 <item>...</item> 반복에
+      // 중첩·속성 없는 평평한 태그만 담고 있어, 가벼운 정규식 파싱으로 충분함.
+      const xml = await resp.text();
+      const resultCode = xml.match(/<resultCode>([^<]*)<\/resultCode>/)?.[1];
+      if (resultCode !== '00') {
+        const resultMsg = xml.match(/<resultMsg>([^<]*)<\/resultMsg>/)?.[1];
+        res.status(502).json({ error: resultMsg || 'data.go.kr 응답 코드가 정상이 아닙니다.' });
+        return;
+      }
+
+      const items: Record<string, string>[] = [];
+      for (const itemMatch of xml.matchAll(/<item>([\s\S]*?)<\/item>/g)) {
+        const row: Record<string, string> = {};
+        for (const tagMatch of itemMatch[1].matchAll(/<(\w+)>([^<]*)<\/\1>/g)) {
+          row[tagMatch[1]] = tagMatch[2];
+        }
+        items.push(row);
+      }
+
+      const byRegion = new Map<string, { areaNm: string; totalTeu: number }>();
+      for (const row of items) {
+        const areaCd = row.areaCd ?? '';
+        const areaNm = row.areaNm ?? '';
+        const total = Number(row.tContnTeuTotal ?? 0) || 0;
+        if (!areaCd) continue;
+        const entry = byRegion.get(areaCd) ?? { areaNm, totalTeu: 0 };
+        entry.totalTeu += total;
+        byRegion.set(areaCd, entry);
+      }
+
+      const rows = Array.from(byRegion.entries())
+        .map(([areaCd, v]) => ({ areaCd, areaNm: v.areaNm, totalTeu: Math.round(v.totalTeu) }))
+        .sort((a, b) => b.totalTeu - a.totalTeu);
+
+      const payload = {
+        source: '해양수산부 수출입 컨테이너 처리실적 (data.go.kr)',
+        note: '국내 항만별이 아닌 교역 상대지역별 집계입니다.',
+        year,
+        rows,
+      };
+      cacheSet(cacheKey, payload, 60 * 60 * 1000);
+      res.json(payload);
+    } catch {
+      res.status(502).json({ error: 'data.go.kr 컨테이너 처리실적 조회 중 오류가 발생했습니다.' });
     }
   });
 

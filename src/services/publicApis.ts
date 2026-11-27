@@ -7,6 +7,7 @@ export interface ApiStatusResponse {
   sgis: boolean;
   kosis: boolean;
   vworld: boolean;
+  dataGoKr?: boolean;
   /** 정적 배포(GitHub Pages) 빌드 여부. true면 /api 대신 빌드 시점 스냅샷 JSON을 읽음 */
   staticMode?: boolean;
   /** 스냅샷 생성 시각 (ISO 8601). 스냅샷이 없으면 null */
@@ -15,7 +16,21 @@ export interface ApiStatusResponse {
     sgis: string[];
     kosis: string[];
     vworld: string[];
+    dataGoKr?: string[];
   };
+}
+
+export interface DataGoKrContainerRegion {
+  areaCd: string;
+  areaNm: string;
+  totalTeu: number;
+}
+
+export interface DataGoKrContainerResponse {
+  source: string;
+  note: string;
+  year: string;
+  rows: DataGoKrContainerRegion[];
 }
 
 export interface SgisSubdistrictItem {
@@ -510,4 +525,13 @@ export function reverseGeocodeVWorld(lat: number, lon: number): Promise<VWorldRe
     lon: lon.toFixed(6),
   });
   return fetchJson<VWorldReverseResult>(`/api/vworld/reverse?${params.toString()}`);
+}
+
+export function fetchDataGoKrContainerByRegion(year?: string): Promise<DataGoKrContainerResponse> {
+  if (IS_STATIC_DEPLOY) return staticUnsupported();
+  const params = new URLSearchParams(year ? { year } : {});
+  const qs = params.toString();
+  return fetchJson<DataGoKrContainerResponse>(
+    `/api/datagokr/container-by-region${qs ? `?${qs}` : ''}`
+  );
 }
