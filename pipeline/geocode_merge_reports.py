@@ -1,10 +1,17 @@
 """
 Nominatim 검증(geocode_check.py)과 VWorld 검증(geocode_check_vworld.py)을 합쳐
-"둘 중 하나라도 확인되면 성공"으로 재판정.
+"둘 중 하나라도 확인되면 성공"으로 재판정하고, 대형 시설 보정을 한 번 더 거친다.
 
-이유: 두 지오코더가 서로 다른 데이터셋이라 잘 찾는 시설 종류가 다름
+1단계 — 합산: 두 지오코더가 서로 다른 데이터셋이라 잘 찾는 시설 종류가 다름
 (예: VWorld는 항만·광산을, Nominatim은 국립공원·발전소를 상대적으로 더 잘 찾음).
-둘 다 실패한 항목만 "진짜 실패"로 남겨 PLAN.md 95% 기준에 더 가깝게 잰다.
+
+2단계 — 대형 시설 보정: 국립공원·발전소·박물관처럼 부지가 넓은 시설은 "입구/대표
+좌표"와 "검색 결과 좌표"가 5km를 넘게 벌어질 수 있다(예: 다도해해상국립공원은
+여러 섬에 걸쳐 있어 21.8km 차이가 나도 같은 곳). 검색 결과 이름에 정식 명칭
+전체와 공식 유형어(국립공원/발전소/박물관)가 함께 들어 있으면, 거리 기준을
+WIDE_RADIUS_KM까지 넓혀 확인된 것으로 본다. 반대로 "OO동/OO치킨/OO은행"처럼
+흔한 지명·상호만 겹치는 경우는(예: mine_donghae_ls → "IBK기업은행 동해") 유형어가
+없으므로 보정 대상에서 자동으로 빠진다.
 
 입력: data/geocode_failed.csv (Nominatim 실패 목록), data/geocode_failed_vworld.csv
 결과: data/geocode_report_combined.json, data/geocode_failed_combined.csv
@@ -28,10 +35,31 @@ OUT_REPORT = os.path.join(ROOT, "data", "geocode_report_combined.json")
 OUT_FAILED = os.path.join(ROOT, "data", "geocode_failed_combined.csv")
 SKIP_TYPES = {"defense_hub"}
 
+# 넓은 부지를 가진 시설 종류에 쓰는 보정 반경(km)과, 매칭 이름에 반드시 있어야 하는
+# 공식 유형어. 둘 다 있어야 보정 성공으로 치므로 동명의 아파트·상점·은행은 안 걸림.
+WIDE_RADIUS_KM = 30.0
+DESIGNATION_KEYWORDS = ("국립공원", "발전소", "박물관")
+
 
 def read_failed(path: str) -> dict[str, dict]:
     with open(path, encoding="utf-8") as f:
         return {row["id"]: row for row in csv.DictReader(f)}
+
+
+def wide_radius_match(row: dict | None, match_col: str) -> tuple[bool, str]:
+    """distance_km 기준 WIDE_RADIUS_KM 안이고, 매칭 이름에 공식 유형어가 있으면 보정 성공"""
+    if not row:
+        return False, ""
+    match = row.get(match_col, "")
+    if not match or not any(kw in match for kw in DESIGNATION_KEYWORDS):
+        return False, ""
+    try:
+        dist = float(row.get("distance_km", ""))
+    except ValueError:
+        return False, ""
+    if dist <= WIDE_RADIUS_KM:
+        return True, match
+    return False, ""
 
 
 def main() -> int:
@@ -44,34 +72,56 @@ def main() -> int:
 
     by_type: dict[str, dict[str, int]] = {}
     still_failed_rows = []
+    wide_rescued_rows = []
     for fac in facilities:
         t = by_type.setdefault(fac["type"], {"checked": 0, "ok": 0})
         t["checked"] += 1
         if fac["id"] not in both_failed_ids:
             t["ok"] += 1
-        else:
-            row = nom_failed.get(fac["id"]) or vw_failed.get(fac["id"])
-            still_failed_rows.append(
+            continue
+
+        nom_row = nom_failed.get(fac["id"])
+        vw_row = vw_failed.get(fac["id"])
+        nom_ok, nom_match = wide_radius_match(nom_row, "nominatim_best_match")
+        vw_ok, vw_match = wide_radius_match(vw_row, "vworld_best_match")
+        if nom_ok or vw_ok:
+            t["ok"] += 1
+            both_failed_ids.discard(fac["id"])
+            wide_rescued_rows.append(
                 {
                     "id": fac["id"],
                     "name": fac["name"],
                     "type": fac["type"],
-                    "lat": fac["lat"],
-                    "lon": fac["lon"],
-                    "nominatim_status": nom_failed.get(fac["id"], {}).get("status", "성공"),
-                    "vworld_status": vw_failed.get(fac["id"], {}).get("status", "성공"),
-                    "nominatim_best_match": nom_failed.get(fac["id"], {}).get("nominatim_best_match", ""),
-                    "vworld_best_match": vw_failed.get(fac["id"], {}).get("vworld_best_match", ""),
+                    "matchedVia": "nominatim" if nom_ok else "vworld",
+                    "matchedName": nom_match if nom_ok else vw_match,
+                    "distanceKm": (nom_row or {}).get("distance_km") if nom_ok else (vw_row or {}).get("distance_km"),
                 }
             )
+            continue
+
+        still_failed_rows.append(
+            {
+                "id": fac["id"],
+                "name": fac["name"],
+                "type": fac["type"],
+                "lat": fac["lat"],
+                "lon": fac["lon"],
+                "nominatim_status": (nom_row or {}).get("status", "성공"),
+                "vworld_status": (vw_row or {}).get("status", "성공"),
+                "nominatim_best_match": (nom_row or {}).get("nominatim_best_match", ""),
+                "vworld_best_match": (vw_row or {}).get("vworld_best_match", ""),
+            }
+        )
 
     ok = len(facilities) - len(both_failed_ids)
     report = {
         "generatedAt": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "geocoder": "OpenStreetMap Nominatim ∪ VWorld (둘 중 하나라도 5km 안이면 성공)",
+        "geocoder": "OpenStreetMap Nominatim ∪ VWorld (둘 중 하나라도 5km 안이면 성공, "
+        f"대형 시설은 정식 명칭+유형어 일치 시 {WIDE_RADIUS_KM:.0f}km까지 보정)",
         "checked": len(facilities),
         "succeeded": ok,
         "successRate": round(ok / len(facilities), 4) if facilities else 0,
+        "wideRadiusRescued": wide_rescued_rows,
         "skipped": {"defense_hub": "도시 단위 좌표만 쓰므로 제외"},
         "byType": by_type,
     }
@@ -87,6 +137,7 @@ def main() -> int:
                         r["nominatim_status"], r["vworld_status"],
                         r["nominatim_best_match"], r["vworld_best_match"]])
     print(f"합산 성공 {ok}/{len(facilities)} ({report['successRate'] * 100:.1f}%)")
+    print(f"  - 대형 시설 보정으로 추가 확인: {len(wide_rescued_rows)}곳")
     print(f"둘 다 실패(진짜 미확인): {len(still_failed_rows)}곳")
     return 0
 

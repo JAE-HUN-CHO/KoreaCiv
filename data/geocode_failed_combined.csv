@@ -1,10 +1,6 @@
 id,name,type,lat,lon,nominatim_status,vworld_status,nominatim_best_match,vworld_best_match
-np_palgongsan,팔공산국립공원,national_park,36.016,128.695,미검색,불일치,,팔공산국립공원
-np_taean,태안해안국립공원,national_park,36.742,126.185,미검색,불일치,,태안해안국립공원
-np_dadohae,다도해해상국립공원,national_park,34.335,126.685,불일치,불일치,"다도해해상국립공원, 신금리, 고흥군, 전남광주통합특별시, 59569, 대한민국",다도해해상국립공원
 cul_tongdosa,영축총림 통도사 (불보종찰),cultural_site,35.488,129.064,미검색,미검색,,
 cul_baekje,백제역사유적지구 (공산성·국립공주박물관),cultural_site,36.463,127.126,불일치,미검색,"능산리고분군 (백제역사유적지구), 61, 왕릉로, 부여읍, 부여군, 충청남도, 33161, 대한민국",
-cul_naju_museum,국립나주박물관 · 영산강 고분군 · 나주읍성,cultural_site,34.971,126.647,불일치,불일치,"국립나주박물관, 신촌리, 나주시, 전남광주통합특별시, 대한민국",국립나주박물관
 pp_hanul,한울·신한울 원자력본부,power_plant,37.092,129.383,불일치,불일치,"한울아파트, 43, 신성동, 유성구, 대전광역시, 34118, 대한민국",더 한울
 pp_boryeong,보령·신보령 화력,power_plant,36.404,126.491,불일치,불일치,"보령 그린발전, 주교면, 보령시, 충청남도, 대한민국","보령-울진선,부산-파주선"
 pp_wolseong,월성·신월성 원자력본부,power_plant,35.713,129.476,불일치,불일치,"월성중학교, 19, 충효7길, 충효동, 선도동, 경주시, 경상북도, 38057, 대한민국",월성
@@ -14,7 +10,6 @@ pp_gwangyang_lng,광양·여수 복합화력,power_plant,34.906,127.734,불일�
 pp_gangneung_anin,강릉안인화력,power_plant,37.728,128.985,미검색,미검색,,
 pp_pocheon_lng,포천복합화력,power_plant,37.901,127.205,미검색,미검색,,
 pp_seocheon,신서천화력,power_plant,36.136,126.526,미검색,미검색,,
-pp_sancheong,산청양수발전소,power_plant,35.352,127.845,미검색,불일치,,한국수력원자력(주)산청양수발전소
 pp_sejong_lng,세종천연가스·열병합,power_plant,36.512,127.285,미검색,미검색,,
 pp_gunsan_lng,군산복합화력,power_plant,35.962,126.621,미검색,미검색,,
 pp_jeju_wind,제주 복합·해상풍력 클러스터,power_plant,33.541,126.632,미검색,불일치,,나라키움제주복합관사

@@ -1,16 +1,58 @@
 {
-  "generatedAt": "2026-11-27T14:03:45Z",
-  "geocoder": "OpenStreetMap Nominatim ∪ VWorld (둘 중 하나라도 5km 안이면 성공)",
+  "generatedAt": "2026-11-27T14:12:31Z",
+  "geocoder": "OpenStreetMap Nominatim ∪ VWorld (둘 중 하나라도 5km 안이면 성공, 대형 시설은 정식 명칭+유형어 일치 시 30km까지 보정)",
   "checked": 140,
-  "succeeded": 111,
-  "successRate": 0.7929,
+  "succeeded": 116,
+  "successRate": 0.8286,
+  "wideRadiusRescued": [
+    {
+      "id": "np_palgongsan",
+      "name": "팔공산국립공원",
+      "type": "national_park",
+      "matchedVia": "vworld",
+      "matchedName": "팔공산국립공원",
+      "distanceKm": "6.5"
+    },
+    {
+      "id": "np_taean",
+      "name": "태안해안국립공원",
+      "type": "national_park",
+      "matchedVia": "vworld",
+      "matchedName": "태안해안국립공원",
+      "distanceKm": "8.8"
+    },
+    {
+      "id": "np_dadohae",
+      "name": "다도해해상국립공원",
+      "type": "national_park",
+      "matchedVia": "vworld",
+      "matchedName": "다도해해상국립공원",
+      "distanceKm": "21.8"
+    },
+    {
+      "id": "cul_naju_museum",
+      "name": "국립나주박물관 · 영산강 고분군 · 나주읍성",
+      "type": "cultural_site",
+      "matchedVia": "nominatim",
+      "matchedName": "국립나주박물관, 신촌리, 나주시, 전남광주통합특별시, 대한민국",
+      "distanceKm": "6.3"
+    },
+    {
+      "id": "pp_sancheong",
+      "name": "산청양수발전소",
+      "type": "power_plant",
+      "matchedVia": "vworld",
+      "matchedName": "한국수력원자력(주)산청양수발전소",
+      "distanceKm": "12.5"
+    }
+  ],
   "skipped": {
     "defense_hub": "도시 단위 좌표만 쓰므로 제외"
   },
   "byType": {
     "national_park": {
       "checked": 23,
-      "ok": 20
+      "ok": 23
     },
     "university": {
       "checked": 24,
@@ -18,11 +60,11 @@
     },
     "cultural_site": {
       "checked": 30,
-      "ok": 27
+      "ok": 28
     },
     "power_plant": {
       "checked": 26,
-      "ok": 13
+      "ok": 14
     },
     "port": {
       "checked": 12,
