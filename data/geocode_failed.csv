@@ -1,0 +1,45 @@
+id,name,type,lat,lon,status,distance_km,nominatim_best_match
+np_jirisan,지리산국립공원,national_park,35.337,127.731,불일치,5.2,"지리산국립공원 백무동통제소 Jirisan National Park Baekmudong Control Office, 백무동-장터목 대피소 5.2Km 2:55, 중백무, 강청리, 함양군, 경상남도, 50050, 대한민국"
+np_palgongsan,팔공산국립공원,national_park,36.016,128.695,미검색,,
+np_taean,태안해안국립공원,national_park,36.742,126.185,미검색,,
+np_dadohae,다도해해상국립공원,national_park,34.335,126.685,불일치,73.2,"다도해해상국립공원, 신금리, 고흥군, 전남광주통합특별시, 59569, 대한민국"
+np_naejangsan,내장산국립공원,national_park,35.487,126.889,미검색,,
+np_taebaeksan,태백산국립공원,national_park,37.097,128.917,미검색,,
+cul_haeinsa,해인사 장경판전 (팔만대장경),cultural_site,35.801,128.098,미검색,,
+cul_tongdosa,영축총림 통도사 (불보종찰),cultural_site,35.488,129.064,미검색,,
+cul_baekje,백제역사유적지구 (공산성·국립공주박물관),cultural_site,36.463,127.126,불일치,26.4,"능산리고분군 (백제역사유적지구), 61, 왕릉로, 부여읍, 부여군, 충청남도, 33161, 대한민국"
+cul_gangneung_ojuk,강릉 오죽헌 · 선교장 · 경포대,cultural_site,37.779,128.879,미검색,,
+cul_gimhae_gaya,국립김해박물관 · 대성동 가야고분군,cultural_site,35.243,128.873,미검색,,
+cul_cheongju_jikji,청주고인쇄박물관 (직지) · 국립청주박물관,cultural_site,36.644,127.473,미검색,,
+cul_naju_museum,국립나주박물관 · 영산강 고분군 · 나주읍성,cultural_site,34.971,126.647,불일치,6.3,"국립나주박물관, 신촌리, 나주시, 전남광주통합특별시, 대한민국"
+pp_hanul,한울·신한울 원자력본부,power_plant,37.092,129.383,불일치,197.7,"한울아파트, 43, 신성동, 유성구, 대전광역시, 34118, 대한민국"
+pp_hanbit,한빛 원자력본부,power_plant,35.415,126.416,미검색,,
+pp_boryeong,보령·신보령 화력,power_plant,36.404,126.491,불일치,8.0,"보령 그린발전, 주교면, 보령시, 충청남도, 대한민국"
+pp_wolseong,월성·신월성 원자력본부,power_plant,35.713,129.476,불일치,30.7,"월성중학교, 19, 충효7길, 충효동, 선도동, 경주시, 경상북도, 38057, 대한민국"
+pp_samcheok,삼척그린파워·블루파워,power_plant,37.186,129.342,미검색,,
+pp_incheon_lng,서인천·신인천·포스코 LNG,power_plant,37.562,126.605,불일치,8.8,"서인천, 경인고속도로, 효성2동, 계양구, 인천광역시, 21306, 대한민국"
+pp_pyeongtaek,평택복합화력,power_plant,36.992,126.824,미검색,,
+pp_ulsan_lng,울산복합화력,power_plant,35.485,129.376,미검색,,
+pp_gwangyang_lng,광양·여수 복합화력,power_plant,34.906,127.734,불일치,14.4,"광양, 800, 해광로, 도월리, 광양시, 전남광주통합특별시, 57751, 대한민국"
+pp_gangneung_anin,강릉안인화력,power_plant,37.728,128.985,미검색,,
+pp_pocheon_lng,포천복합화력,power_plant,37.901,127.205,미검색,,
+pp_seocheon,신서천화력,power_plant,36.136,126.526,미검색,,
+pp_yangyang,양양양수발전소,power_plant,37.992,128.532,미검색,,
+pp_sancheong,산청양수발전소,power_plant,35.352,127.845,미검색,,
+pp_sejong_lng,세종천연가스·열병합,power_plant,36.512,127.285,미검색,,
+pp_gunsan_lng,군산복합화력,power_plant,35.962,126.621,미검색,,
+pp_jeju_wind,제주 복합·해상풍력 클러스터,power_plant,33.541,126.632,미검색,,
+port_pyeongtaek,평택·당진항,port,36.968,126.826,불일치,23.1,"평택, 평택로57번길, 평택동, 신궁리, 평택시, 경기도, 17917, 대한민국"
+port_pohang,포항항 (영일만항),port,36.106,129.431,미검색,,
+port_gunsan,군산항,port,35.974,126.625,불일치,5.9,"군산항, 서해로, 오식도동, 군산시, 전북특별자치도, 대한민국"
+port_masan,마산항,port,35.195,128.584,불일치,214.1,"마산항, 마산길, 매화리, 압해읍, 신안군, 전남광주통합특별시, 대한민국"
+mine_donghae_ls,동해·삼척 석회석 광업지대,mine,37.465,129.055,불일치,7.0,"동해, 동해역길, 송정동, 동해시, 강원특별자치도, 25785, 대한민국"
+mine_danyang_ls,단양 석회석 광산 벨트,mine,37.015,128.362,미검색,,
+mine_yeongwol_w,영월 상동 텅스텐 광산,mine,37.145,128.838,미검색,,
+mine_taebaek_coal,태백 장성·철암 탄전(폐광),mine,37.105,129.012,미검색,,
+mine_jeongseon_ls,정선 신예미 철·석회석 광산,mine,37.245,128.698,미검색,,
+mine_samcheok_coal,삼척 도계 무연탄 광업소,mine,37.232,129.048,미검색,,
+mine_bonghwa_zn,봉화 연화 아연·연 광산지대,mine,37.048,129.025,미검색,,
+mine_hwasun_coal,화순 탄전 (호남 폐광지),mine,35.068,127.045,미검색,,
+mine_haenam_au,해남 모이산·은산 금광,mine,34.482,126.585,미검색,,
+mine_chungju_talc,충주·제천 비금속 광업지대,mine,36.992,128.021,불일치,10.2,"충주, 하방1길, 봉방동, 충주시, 충청북도, 27476, 대한민국"
