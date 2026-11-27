@@ -137,6 +137,10 @@ const SEA_LABELS = [
   { lat: 34.4, lon: 129.3, ko: '대한해협', en: 'Korea Strait' },
 ];
 
+// 카메라 배율(px/km) 범위. 휴대폰 세로 화면에서도 한반도 전체가 들어가도록 하한을 낮게 둠
+const MIN_ZOOM = 0.4;
+const MAX_ZOOM = 8.5;
+
 export const HexMapCanvas: React.FC<HexMapCanvasProps> = ({
   world,
   activeLens,
@@ -339,7 +343,7 @@ export const HexMapCanvas: React.FC<HexMapCanvasProps> = ({
     cameraRef.current = {
       x: (world.bounds.minX + world.bounds.maxX) / 2 - 22, // 울릉도 때문에 치우침 보정
       y: (world.bounds.minY + world.bounds.maxY) / 2,
-      zoom: Math.max(0.85, Math.min(2.2, fitZoom * 0.94)),
+      zoom: Math.max(MIN_ZOOM, Math.min(2.2, fitZoom * 0.94)),
     };
     onZoomChange?.(cameraRef.current.zoom);
     setRenderTick((t) => t + 1);
@@ -1362,7 +1366,7 @@ export const HexMapCanvas: React.FC<HexMapCanvasProps> = ({
       const wyBefore = (sy - rect.height / 2) / cam.zoom + cam.y;
 
       const factor = e.deltaY < 0 ? 1.16 : 1 / 1.16;
-      const newZoom = Math.max(0.65, Math.min(8.5, cam.zoom * factor));
+      const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, cam.zoom * factor));
 
       cameraRef.current = {
         x: wxBefore - (sx - rect.width / 2) / newZoom,
@@ -1376,9 +1380,36 @@ export const HexMapCanvas: React.FC<HexMapCanvasProps> = ({
     return () => canvas.removeEventListener('wheel', onWheel);
   }, [drawScene, onZoomChange]);
 
+  // 터치 핀치 줌: 화면에 닿아 있는 포인터 위치
+  const pointersRef = useRef(new Map<number, { x: number; y: number }>());
+  const pinchRef = useRef<{ startDist: number; startZoom: number; wx: number; wy: number } | null>(null);
+
+  const startPinch = () => {
+    const pts = [...pointersRef.current.values()];
+    if (pts.length < 2) return;
+    const [a, b] = pts;
+    const mx = (a.x + b.x) / 2;
+    const my = (a.y + b.y) / 2;
+    const { wx, wy } = screenToWorld(mx, my);
+    pinchRef.current = {
+      startDist: Math.hypot(a.x - b.x, a.y - b.y) || 1,
+      startZoom: cameraRef.current.zoom,
+      wx,
+      wy,
+    };
+    // 핀치 중에는 드래그·탭 선택을 멈춤
+    dragRef.current.isDown = false;
+    dragRef.current.moved = true;
+  };
+
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     animRef.current = null;
     e.currentTarget.setPointerCapture(e.pointerId);
+    pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointersRef.current.size >= 2) {
+      startPinch();
+      return;
+    }
     dragRef.current = {
       isDown: true,
       moved: false,
@@ -1390,6 +1421,28 @@ export const HexMapCanvas: React.FC<HexMapCanvasProps> = ({
   };
 
   const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (pointersRef.current.has(e.pointerId)) {
+      pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    }
+    const pinch = pinchRef.current;
+    if (pinch && pointersRef.current.size >= 2) {
+      const [a, b] = [...pointersRef.current.values()];
+      const dist = Math.hypot(a.x - b.x, a.y - b.y);
+      const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, pinch.startZoom * (dist / pinch.startDist)));
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      const sx = (a.x + b.x) / 2 - rect.left;
+      const sy = (a.y + b.y) / 2 - rect.top;
+      cameraRef.current = {
+        x: pinch.wx - (sx - rect.width / 2) / newZoom,
+        y: pinch.wy - (sy - rect.height / 2) / newZoom,
+        zoom: newZoom,
+      };
+      onZoomChange?.(newZoom);
+      drawScene();
+      return;
+    }
     if (dragRef.current.isDown) {
       const dx = e.clientX - dragRef.current.startClientX;
       const dy = e.clientY - dragRef.current.startClientY;
@@ -1426,6 +1479,24 @@ export const HexMapCanvas: React.FC<HexMapCanvasProps> = ({
   };
 
   const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    pointersRef.current.delete(e.pointerId);
+    if (pinchRef.current) {
+      // 손가락 하나가 남으면 그 위치에서 드래그를 이어감 (탭 선택은 하지 않음)
+      pinchRef.current = null;
+      const rest = [...pointersRef.current.values()][0];
+      if (rest) {
+        dragRef.current = {
+          isDown: true,
+          moved: true,
+          startClientX: rest.x,
+          startClientY: rest.y,
+          startCamX: cameraRef.current.x,
+          startCamY: cameraRef.current.y,
+        };
+      }
+      return;
+    }
+    if (pointersRef.current.size > 0) return;
     const wasMoved = dragRef.current.moved;
     dragRef.current.isDown = false;
     dragRef.current.moved = false;
@@ -1452,7 +1523,15 @@ export const HexMapCanvas: React.FC<HexMapCanvasProps> = ({
     }
   };
 
-  const handlePointerLeave = () => {
+  const handlePointerCancel = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    pointersRef.current.delete(e.pointerId);
+    pinchRef.current = null;
+    dragRef.current.isDown = false;
+  };
+
+  const handlePointerLeave = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    // 터치는 손을 떼면 leave가 오므로 호버 정리만 마우스에 적용
+    if (e.pointerType === 'touch') return;
     dragRef.current.isDown = false;
     if (hoveredHexIdRef.current !== null || hoveredFacilityIdRef.current !== null) {
       hoveredHexIdRef.current = null;
@@ -1468,7 +1547,7 @@ export const HexMapCanvas: React.FC<HexMapCanvasProps> = ({
     const onZoomStep = (ev: Event) => {
       const detail = (ev as CustomEvent<{ factor: number }>).detail;
       const cam = cameraRef.current;
-      const newZoom = Math.max(0.65, Math.min(8.5, cam.zoom * detail.factor));
+      const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, cam.zoom * detail.factor));
       cameraRef.current = { ...cam, zoom: newZoom };
       onZoomChange?.(newZoom);
       drawScene();
@@ -1485,7 +1564,8 @@ export const HexMapCanvas: React.FC<HexMapCanvasProps> = ({
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerLeave}
-        className={`block h-full w-full ${
+        onPointerCancel={handlePointerCancel}
+        className={`block h-full w-full touch-none ${
           pickingCompareFromMap
             ? 'cursor-crosshair'
             : 'cursor-grab active:cursor-grabbing'
