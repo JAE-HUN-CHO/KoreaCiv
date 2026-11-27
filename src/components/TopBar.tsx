@@ -23,7 +23,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   onOpenSources,
 }) => {
   return (
-    <header className="relative z-30 flex h-13 shrink-0 items-center justify-between gap-8 border-b border-[#223347] bg-[#0B1521]/95 px-5 backdrop-blur-sm">
+    <header className="relative z-30 flex h-13 shrink-0 items-center justify-between gap-3 border-b border-[#223347] bg-[#0B1521]/95 px-3 sm:gap-8 sm:px-5 backdrop-blur-sm">
       {/* Zone 1: Single text element wordmark */}
       <button
         type="button"
@@ -36,7 +36,7 @@ export const TopBar: React.FC<TopBarProps> = ({
       {/* Zone 2: 4 single-line text navigation links */}
       <nav
         aria-label="주요 보기 전환"
-        className="flex items-center gap-6 overflow-x-auto text-sm font-medium"
+        className="flex min-w-0 flex-1 items-center gap-4 overflow-x-auto text-sm font-medium [scrollbar-width:none] sm:flex-none sm:gap-6"
       >
         {NAV_ITEMS.map((item) => {
           const isActive = activeTab === item.id;
@@ -68,10 +68,11 @@ export const TopBar: React.FC<TopBarProps> = ({
         <button
           type="button"
           onClick={onOpenSources}
-          className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded border border-[#2C4057] bg-[#132234] px-3 py-1.5 text-xs font-medium text-[#DCE4EC] transition-colors hover:border-[#D4A84B]/60 hover:text-[#F5D684] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D4A84B]"
+          aria-label="출처 · 규칙"
+          className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded border border-[#2C4057] bg-[#132234] px-2 py-1.5 text-xs font-medium text-[#DCE4EC] sm:px-3 transition-colors hover:border-[#D4A84B]/60 hover:text-[#F5D684] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D4A84B]"
         >
           <HelpCircle className="h-3.5 w-3.5 text-[#D4A84B]" aria-hidden="true" />
-          <span>출처 · 규칙</span>
+          <span className="hidden sm:inline">출처 · 규칙</span>
         </button>
       </div>
     </header>

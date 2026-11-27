@@ -62,7 +62,10 @@ export default function App() {
 
   const [activeTab, setActiveTab] = useState<WorkspaceTab>('map');
   const [activeLens, setActiveLens] = useState<LensId>('terrain');
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  // 휴대폰 폭(768px 미만)에서는 지도가 먼저 보이도록 렌즈 패널을 접은 채로 시작
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches
+  );
   const [sourcesOpen, setSourcesOpen] = useState(false);
 
   const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
@@ -271,6 +274,8 @@ export default function App() {
   }, []);
 
   const handleSelectCity = useCallback((cityId: string) => {
+    // 휴대폰 폭에서는 City View가 화면을 거의 다 쓰므로 렌즈 패널을 접어 겹치지 않게 함
+    if (window.matchMedia('(max-width: 767px)').matches) setSidebarCollapsed(true);
     setSelectedCityId(cityId);
     setSelectedFacilityId(null);
     setCompareCityId((prev) => (prev === cityId ? null : prev));
@@ -625,8 +630,8 @@ export default function App() {
             className={`pointer-events-auto absolute bottom-4 z-20 flex flex-col items-end gap-2 transition-all ${
               selectedCity
                 ? compareMode
-                  ? 'right-[756px]'
-                  : 'right-[376px]'
+                  ? 'right-4 max-md:hidden md:right-[756px]'
+                  : 'right-4 max-md:hidden md:right-[376px]'
                 : 'right-4'
             }`}
           >

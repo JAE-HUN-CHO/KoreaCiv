@@ -156,7 +156,7 @@ export const LensSidebar: React.FC<LensSidebarProps> = ({
   }
 
   return (
-    <aside className="pointer-events-auto absolute top-3 bottom-3 left-3 z-20 flex w-[272px] flex-col overflow-hidden rounded border border-[#24364B] bg-[#0D1927]/94 backdrop-blur-md">
+    <aside className="pointer-events-auto absolute top-3 bottom-3 left-3 z-20 flex w-[272px] max-w-[calc(100vw-24px)] flex-col overflow-hidden rounded border border-[#24364B] bg-[#0D1927]/94 backdrop-blur-md">
       {/* 상단 검색창 + 접기 버튼 */}
       <div className="flex items-center gap-2 border-b border-[#1E2F42] px-3 py-2.5">
         <div className="relative flex-1">
