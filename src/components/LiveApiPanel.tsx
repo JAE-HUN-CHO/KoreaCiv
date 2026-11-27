@@ -66,6 +66,12 @@ const BATCH_PRESETS: { id: string; label: string; queries: string[] }[] = [
   },
 ];
 
+function formatSnapshotTime(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleString('ko-KR', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Seoul' });
+}
+
 export const LiveApiPanel: React.FC<LiveApiPanelProps> = ({
   apiStatus,
   liveMeta,
@@ -79,6 +85,8 @@ export const LiveApiPanel: React.FC<LiveApiPanelProps> = ({
   onClearCustomPins,
   onClose,
 }) => {
+  const statusLabel = (ok: boolean) =>
+    apiStatus?.staticMode ? (ok ? '스냅샷' : '정적 배포 미지원') : ok ? '연결됨' : '키 필요';
   const [tab, setTab] = useState<ApiTab>('sgis');
 
   // --- SGIS State ---
@@ -235,7 +243,7 @@ export const LiveApiPanel: React.FC<LiveApiPanelProps> = ({
 
   // 처음 탭 진입 시 키가 연결되어 있으면 자동 1회 로드
   useEffect(() => {
-    if (tab === 'sgis' && apiStatus?.sgis && !sgisData && !sgisLoading) {
+    if (tab === 'sgis' && apiStatus?.sgis && !apiStatus.staticMode && !sgisData && !sgisLoading) {
       void handleFetchSgis();
     }
     if (tab === 'kosis' && apiStatus?.kosis && !kosisData && !kosisLoading) {
@@ -279,11 +287,13 @@ export const LiveApiPanel: React.FC<LiveApiPanelProps> = ({
             <p className="mt-0.5 text-xs text-[#8FA4B8]">
               {liveMeta?.isLive
                 ? `현재 지도에 SGIS ${liveMeta.sgisYear ?? '최신'} 공식 경계(${liveMeta.provinceBoundaries.length}시도·${liveMeta.sigunguBoundaries.length}시군구) 및 KOSIS ${liveMeta.kosisPopYear ?? '최신'} 인구 / ${liveMeta.kosisGrdpYear ?? '최신'} GRDP가 자동 반영되어 있습니다.`
-                : '서버 프록시(/api/*)를 통해 API 키를 브라우저에 노출하지 않고 최신 통계·행정경계·국토 좌표를 5km 격자에 자동 반영합니다.'}
+                : apiStatus?.staticMode
+                  ? '정적 배포 버전입니다. GitHub Actions가 하루 한 번 받아 둔 공공 API 스냅샷을 읽습니다.'
+                  : '서버 프록시(/api/*)를 통해 API 키를 브라우저에 노출하지 않고 최신 통계·행정경계·국토 좌표를 5km 격자에 자동 반영합니다.'}
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            {onRefreshLiveWorld && (
+            {onRefreshLiveWorld && !apiStatus?.staticMode && (
               <button
                 type="button"
                 disabled={liveLoading}
@@ -331,26 +341,39 @@ export const LiveApiPanel: React.FC<LiveApiPanelProps> = ({
           {apiStatus && (
             <div className="font-mono-num flex items-center gap-2 text-[11px] text-[#859BB0]">
               <span>
-                SGIS: <strong className={apiStatus.sgis ? 'text-[#6CC776]' : 'text-[#D97A36]'}>{apiStatus.sgis ? '연결됨' : '키 필요'}</strong>
+                SGIS: <strong className={apiStatus.sgis ? 'text-[#6CC776]' : 'text-[#D97A36]'}>{statusLabel(apiStatus.sgis)}</strong>
               </span>
               <span aria-hidden="true">·</span>
               <span>
-                KOSIS: <strong className={apiStatus.kosis ? 'text-[#6CC776]' : 'text-[#D97A36]'}>{apiStatus.kosis ? '연결됨' : '키 필요'}</strong>
+                KOSIS: <strong className={apiStatus.kosis ? 'text-[#6CC776]' : 'text-[#D97A36]'}>{statusLabel(apiStatus.kosis)}</strong>
               </span>
               <span aria-hidden="true">·</span>
               <span>
-                VWorld: <strong className={apiStatus.vworld ? 'text-[#6CC776]' : 'text-[#D97A36]'}>{apiStatus.vworld ? '연결됨' : '키 필요'}</strong>
+                VWorld: <strong className={apiStatus.vworld ? 'text-[#6CC776]' : 'text-[#D97A36]'}>{statusLabel(apiStatus.vworld)}</strong>
               </span>
             </div>
           )}
         </div>
+
+        {apiStatus?.staticMode && (
+          <div className="border-b border-[#1E2F42] bg-[#122132] px-5 py-2.5 text-xs text-[#C9D6E2]">
+            <span className="font-semibold text-[#F5D684]">정적 배포 모드</span>
+            <span className="text-[#9AB0C4]">
+              {' '}
+              · 키가 필요한 실시간 조회(SGIS 자치구 조회·경계, KOSIS 통계표 검색, VWorld 지오코딩)는 꺼져 있습니다.
+              {apiStatus.snapshotGeneratedAt
+                ? ` 지도·역사 렌즈·KOSIS 시계열은 ${formatSnapshotTime(apiStatus.snapshotGeneratedAt)} 스냅샷을 사용합니다.`
+                : ' 아직 수집된 스냅샷이 없어 내장 데이터로 표시합니다.'}
+            </span>
+          </div>
+        )}
 
         {/* 본문 */}
         <div className="flex-1 overflow-y-auto p-5 text-xs">
           {/* ===================== 1. SGIS 탭 ===================== */}
           {tab === 'sgis' && (
             <div className="space-y-4">
-              {!apiStatus?.sgis && (
+              {!apiStatus?.sgis && !apiStatus?.staticMode && (
                 <div className="rounded border border-[#3B4E64] bg-[#122132] p-3.5 text-[#C9D6E2]">
                   <div className="font-semibold text-[#F5D684]">SGIS 환경변수 확인</div>
                   <p className="mt-1 text-[#9AB0C4]">
@@ -489,7 +512,7 @@ export const LiveApiPanel: React.FC<LiveApiPanelProps> = ({
           {/* ===================== 2. KOSIS 탭 ===================== */}
           {tab === 'kosis' && (
             <div className="space-y-5">
-              {!apiStatus?.kosis && (
+              {!apiStatus?.kosis && !apiStatus?.staticMode && (
                 <div className="rounded border border-[#3B4E64] bg-[#122132] p-3.5 text-[#C9D6E2]">
                   <div className="font-semibold text-[#F5D684]">KOSIS 환경변수 확인</div>
                   <p className="mt-1 text-[#9AB0C4]">
@@ -635,7 +658,7 @@ export const LiveApiPanel: React.FC<LiveApiPanelProps> = ({
           {/* ===================== 3. VWorld 지오코딩 탭 ===================== */}
           {tab === 'vworld' && (
             <div className="space-y-5">
-              {!apiStatus?.vworld && (
+              {!apiStatus?.vworld && !apiStatus?.staticMode && (
                 <div className="rounded border border-[#3B4E64] bg-[#122132] p-3.5 text-[#C9D6E2]">
                   <div className="font-semibold text-[#F5D684]">VWorld API 키 확인</div>
                   <p className="mt-1 text-[#9AB0C4]">
