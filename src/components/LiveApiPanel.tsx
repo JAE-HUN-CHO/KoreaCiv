@@ -4,6 +4,7 @@ import type { ProvinceCode } from '../types/civ';
 import type { LiveWorldMeta } from '../engine/hexGrid';
 import {
   batchGeocodeVWorld,
+  fetchDataGoKrContainerByRegion,
   fetchKosisTimeseries,
   fetchSgisBoundaryOverlay,
   fetchSgisSubdistricts,
@@ -12,6 +13,7 @@ import {
   SGIS_PROVINCE_CODES,
   type ApiStatusResponse,
   type CustomMapPin,
+  type DataGoKrContainerResponse,
   type GeocodedPlaceResult,
   type KosisSearchItem,
   type KosisTimeseriesResponse,
@@ -33,7 +35,7 @@ interface LiveApiPanelProps {
   onClose: () => void;
 }
 
-type ApiTab = 'sgis' | 'kosis' | 'vworld';
+type ApiTab = 'sgis' | 'kosis' | 'vworld' | 'datagokr';
 
 const BATCH_PRESETS: { id: string; label: string; queries: string[] }[] = [
   {
@@ -124,6 +126,12 @@ export const LiveApiPanel: React.FC<LiveApiPanelProps> = ({
   } | null>(null);
   const [batchLoading, setBatchLoading] = useState(false);
 
+  // --- data.go.kr State ---
+  const [dataGoKrYear, setDataGoKrYear] = useState(String(new Date().getFullYear() - 1));
+  const [dataGoKrData, setDataGoKrData] = useState<DataGoKrContainerResponse | null>(null);
+  const [dataGoKrLoading, setDataGoKrLoading] = useState(false);
+  const [dataGoKrError, setDataGoKrError] = useState<string | null>(null);
+
   // SGIS 조회 실행
   const handleFetchSgis = async (prov: ProvinceCode = sgisProvince, yr: string = sgisYear) => {
     const meta = SGIS_PROVINCE_CODES[prov];
@@ -167,6 +175,20 @@ export const LiveApiPanel: React.FC<LiveApiPanelProps> = ({
       setKosisError(err instanceof Error ? err.message : 'KOSIS 조회에 실패했습니다.');
     } finally {
       setKosisLoading(false);
+    }
+  };
+
+  // data.go.kr 수출입 컨테이너 처리실적(교역 상대지역별) 조회
+  const handleFetchDataGoKr = async (yr: string = dataGoKrYear) => {
+    setDataGoKrLoading(true);
+    setDataGoKrError(null);
+    try {
+      const res = await fetchDataGoKrContainerByRegion(yr);
+      setDataGoKrData(res);
+    } catch (err) {
+      setDataGoKrError(err instanceof Error ? err.message : 'data.go.kr 조회에 실패했습니다.');
+    } finally {
+      setDataGoKrLoading(false);
     }
   };
 
@@ -249,6 +271,9 @@ export const LiveApiPanel: React.FC<LiveApiPanelProps> = ({
     if (tab === 'kosis' && apiStatus?.kosis && !kosisData && !kosisLoading) {
       void handleFetchKosis();
     }
+    if (tab === 'datagokr' && apiStatus?.dataGoKr && !dataGoKrData && !dataGoKrLoading) {
+      void handleFetchDataGoKr();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab, apiStatus]);
 
@@ -322,6 +347,7 @@ export const LiveApiPanel: React.FC<LiveApiPanelProps> = ({
               { id: 'sgis' as const, label: 'SGIS 자치구 · 공식경계', ok: apiStatus?.sgis },
               { id: 'kosis' as const, label: 'KOSIS 시계열 · 통계검색', ok: apiStatus?.kosis },
               { id: 'vworld' as const, label: 'VWorld 지오코딩 · 격자 핀', ok: apiStatus?.vworld },
+              { id: 'datagokr' as const, label: 'data.go.kr 컨테이너 물동량', ok: apiStatus?.dataGoKr },
             ].map((item) => (
               <button
                 key={item.id}
@@ -350,6 +376,10 @@ export const LiveApiPanel: React.FC<LiveApiPanelProps> = ({
               <span aria-hidden="true">·</span>
               <span>
                 VWorld: <strong className={apiStatus.vworld ? 'text-[#6CC776]' : 'text-[#D97A36]'}>{statusLabel(apiStatus.vworld)}</strong>
+              </span>
+              <span aria-hidden="true">·</span>
+              <span>
+                data.go.kr: <strong className={apiStatus.dataGoKr ? 'text-[#6CC776]' : 'text-[#D97A36]'}>{statusLabel(Boolean(apiStatus.dataGoKr))}</strong>
               </span>
             </div>
           )}
@@ -652,6 +682,84 @@ export const LiveApiPanel: React.FC<LiveApiPanelProps> = ({
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* ===================== 2.5 data.go.kr 컨테이너 물동량 탭 ===================== */}
+          {tab === 'datagokr' && (
+            <div className="space-y-5">
+              {!apiStatus?.dataGoKr && !apiStatus?.staticMode && (
+                <div className="rounded border border-[#3B4E64] bg-[#122132] p-3.5 text-[#C9D6E2]">
+                  <div className="font-semibold text-[#F5D684]">data.go.kr 인증키 확인</div>
+                  <p className="mt-1 text-[#9AB0C4]">
+                    AI Studio Secrets에{' '}
+                    <code className="font-mono-num text-[#ECEAE2]">DATA_GO_KR_SERVICE_KEY</code>를 설정하면 해양수산부 수출입 컨테이너 처리실적(교역 상대지역별)을 조회할 수 있습니다.
+                  </p>
+                </div>
+              )}
+
+              <div className="rounded border border-[#2C4259] bg-[#0F1D2C] p-3 text-[11px] text-[#9BB0C4]">
+                이 API는 국내 항만별이 아니라 <strong className="text-[#ECEAE2]">교역 상대지역</strong>(일본·극동아시아·동남아시아 등)별 집계만 줍니다. 지도의 12개 무역항 물동량 수치를 갱신하는 데는 쓸 수 없어, 전국 수출입 물동량의 교역권별 분포를 보는 참고 자료로만 연동했습니다.
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 border-b border-[#1E2F42] pb-3.5">
+                <label className="text-xs text-[#9BB0C4]" htmlFor="datagokr-year">
+                  연도
+                </label>
+                <input
+                  id="datagokr-year"
+                  type="text"
+                  value={dataGoKrYear}
+                  onChange={(e) => setDataGoKrYear(e.target.value.trim())}
+                  className="w-20 rounded border border-[#24374C] bg-[#0A131E] px-2 py-1.5 text-xs text-[#ECEAE2] focus:border-[#D4A84B] focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => void handleFetchDataGoKr()}
+                  disabled={dataGoKrLoading}
+                  className="ml-auto inline-flex cursor-pointer items-center gap-1.5 rounded bg-[#D4A84B] px-3 py-1.5 text-xs font-semibold text-[#0C1622] hover:bg-[#E4BC62] disabled:opacity-50"
+                >
+                  {dataGoKrLoading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                  <span>조회</span>
+                </button>
+              </div>
+
+              {dataGoKrError && (
+                <div className="rounded border border-[#5C2B2B] bg-[#211317] px-3.5 py-2.5 text-[#F0A39A]">
+                  {dataGoKrError}
+                </div>
+              )}
+
+              {dataGoKrData && (
+                <div>
+                  <div className="mb-2 flex items-baseline justify-between text-[11px] text-[#8FA4B8]">
+                    <span>{dataGoKrData.year}년 교역 상대지역별 수출입 컨테이너 물동량 (단위: TEU)</span>
+                    <span className="font-mono-num">{dataGoKrData.source}</span>
+                  </div>
+                  <div className="max-h-64 overflow-auto border-y border-[#1E2F42]">
+                    <table className="w-full border-collapse text-left">
+                      <thead className="sticky top-0 bg-[#101E2E] text-[11px] text-[#8FA4B8]">
+                        <tr className="border-b border-[#223449]">
+                          <th className="px-3 py-2 font-medium">교역 상대지역</th>
+                          <th className="font-mono-num px-2.5 py-2 text-right font-medium">연간 TEU</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#172536]">
+                        {dataGoKrData.rows.map((row) => (
+                          <tr key={row.areaCd} className="hover:bg-[#142334]">
+                            <td className="px-3 py-1.5 font-medium whitespace-nowrap text-[#ECEAE2]">
+                              {row.areaNm}
+                            </td>
+                            <td className="font-mono-num px-2.5 py-1.5 text-right whitespace-nowrap text-[#CFDCE8]">
+                              {row.totalTeu.toLocaleString('ko-KR')}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

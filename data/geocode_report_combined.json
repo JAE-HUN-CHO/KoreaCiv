@@ -1,0 +1,40 @@
+{
+  "generatedAt": "2026-11-27T14:03:45Z",
+  "geocoder": "OpenStreetMap Nominatim ∪ VWorld (둘 중 하나라도 5km 안이면 성공)",
+  "checked": 140,
+  "succeeded": 111,
+  "successRate": 0.7929,
+  "skipped": {
+    "defense_hub": "도시 단위 좌표만 쓰므로 제외"
+  },
+  "byType": {
+    "national_park": {
+      "checked": 23,
+      "ok": 20
+    },
+    "university": {
+      "checked": 24,
+      "ok": 24
+    },
+    "cultural_site": {
+      "checked": 30,
+      "ok": 27
+    },
+    "power_plant": {
+      "checked": 26,
+      "ok": 13
+    },
+    "port": {
+      "checked": 12,
+      "ok": 11
+    },
+    "airport": {
+      "checked": 15,
+      "ok": 15
+    },
+    "mine": {
+      "checked": 10,
+      "ok": 1
+    }
+  }
+}

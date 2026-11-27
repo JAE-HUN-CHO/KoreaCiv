@@ -1,0 +1,41 @@
+{
+  "generatedAt": "2026-11-27T14:03:45Z",
+  "geocoder": "VWorld (국토교통부 공간정보) 장소·주소 검색",
+  "matchRadiusKm": 5.0,
+  "checked": 140,
+  "succeeded": 88,
+  "successRate": 0.6286,
+  "skipped": {
+    "defense_hub": "도시 단위 좌표만 쓰므로 제외"
+  },
+  "byType": {
+    "national_park": {
+      "checked": 23,
+      "ok": 12
+    },
+    "university": {
+      "checked": 24,
+      "ok": 22
+    },
+    "cultural_site": {
+      "checked": 30,
+      "ok": 23
+    },
+    "power_plant": {
+      "checked": 26,
+      "ok": 6
+    },
+    "port": {
+      "checked": 12,
+      "ok": 10
+    },
+    "airport": {
+      "checked": 15,
+      "ok": 14
+    },
+    "mine": {
+      "checked": 10,
+      "ok": 1
+    }
+  }
+}

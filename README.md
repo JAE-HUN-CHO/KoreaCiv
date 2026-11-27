@@ -74,7 +74,7 @@ Pages에는 서버가 없어서, 키가 필요한 즉석 조회(SGIS 자치구 �
 - 지형은 원자료를 칸별로 집계한 값입니다. 표고·기복은 [Copernicus DEM GLO-90](https://registry.opendata.aws/copernicus-dem/), 토지피복은 [ESA WorldCover 2021](https://esa-worldcover.org/)(CC BY 4.0)입니다.
 - 칸별 인구는 시·군 인구(KOSIS)를 [WorldPop 2020](https://hub.worldpop.org/geodata/summary?id=49761)(CC BY 4.0) 100m 격자 인구 비율대로 나눈 값입니다. 시·군 합계는 KOSIS와 같습니다.
 - **시·군 화물 물동량은 추정치입니다.** 화면과 출처 패널에 "추정"으로 표시돼 있습니다. 권역 간 화물 OD는 원자료(국가교통DB)를 확인하지 못해 넣지 않았고, 물류 렌즈는 항만 물동량과 공항(여객 수 기준)을 함께 보여줍니다.
-- 시설 좌표는 직접 입력한 값입니다. `pipeline/geocode_check.py`가 OpenStreetMap Nominatim으로 따로 검증하고, 결과를 `data/geocode_report.json`과 `data/geocode_failed.csv`에 저장합니다(아래 "지형·인구 데이터 다시 만들기" 참고).
+- 시설 좌표는 직접 입력한 값입니다. `pipeline/geocode_check.py`(OpenStreetMap Nominatim)와 `pipeline/geocode_check_vworld.py`(VWorld)가 따로 검증하고, `pipeline/geocode_merge_reports.py`가 둘을 합쳐(`data/geocode_report_combined.json`) 둘 중 하나로라도 확인된 비율을 재산정합니다(아래 "지형·인구 데이터 다시 만들기" 참고).
 - 기획서와 현재 구현의 차이는 [`REPORT.md`](REPORT.md)에 정리돼 있습니다.
 
 ## 지형·인구 데이터 다시 만들기
@@ -110,6 +110,13 @@ npx tsx scripts/dump-facilities.ts > data/raw/facilities.json
 
 ```bash
 python3 pipeline/geocode_check.py data/raw/facilities.json
+```
+
+VWorld 검증은 `VWORLD_API_KEY`가 `.env`에 있으면 바로 실행됩니다(요청 간격 0.2초, 1분 이내).
+
+```bash
+python3 pipeline/geocode_check_vworld.py data/raw/facilities.json
+python3 pipeline/geocode_merge_reports.py
 ```
 
 ## 폴더 구조
