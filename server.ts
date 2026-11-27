@@ -2105,6 +2105,10 @@ async function startServer() {
         return;
       }
 
+      // 개별 대학 요청이 실패(타임아웃·HTTP 오류·오류 응답코드)하면 "진짜로 자료 없음"과
+      // 구분해 failedCount로 세고, 하나라도 있으면 전체 응답을 캐시하지 않음 — 그래야
+      // 일시 장애로 null이 된 대학이 6시간 동안 그대로 굳지 않음
+      let failedCount = 0;
       const results = await runWithConcurrency(UNIVERSITY_IDS_FOR_RESEARCH, 4, async (univ) => {
         const kw = universityMatchKeyword(univ.name);
         const candidates = schools.filter((s) => s.schlKrnNm === kw);
@@ -2124,7 +2128,15 @@ async function startServer() {
             `https://apis.data.go.kr/B340014/EducationResearchService/getComparisonFullTimeFacultyOutsideOfSchoolForPersonResearchGrant?${grantParams.toString()}`,
             { signal: AbortSignal.timeout(10_000) }
           );
+          if (!grantResp.ok) {
+            failedCount++;
+            return { ...univ, schlId: matched.schlId, grantPerFaculty10kKrw: null };
+          }
           const grantXml = await grantResp.text();
+          if (grantXml.match(/<resultCode>([^<]*)<\/resultCode>/)?.[1] !== '00') {
+            failedCount++;
+            return { ...univ, schlId: matched.schlId, grantPerFaculty10kKrw: null };
+          }
           const valStr = grantXml.match(/<indctVal1>([^<]*)<\/indctVal1>/)?.[1];
           return {
             ...univ,
@@ -2132,6 +2144,7 @@ async function startServer() {
             grantPerFaculty10kKrw: valStr ? Number(valStr) : null,
           };
         } catch {
+          failedCount++; // 타임아웃 등 — 자료가 진짜 없는 게 아니라 요청 자체가 실패함
           return { ...univ, schlId: matched.schlId, grantPerFaculty10kKrw: null };
         }
       });
@@ -2142,7 +2155,9 @@ async function startServer() {
         year: svyYr,
         universities: results,
       };
-      cacheSet(cacheKey, payload, 6 * 60 * 60 * 1000);
+      if (failedCount === 0) {
+        cacheSet(cacheKey, payload, 6 * 60 * 60 * 1000);
+      }
       res.json(payload);
     } catch {
       res.status(502).json({ error: '대학알리미 연구비 조회 중 오류가 발생했습니다.' });
