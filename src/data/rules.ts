@@ -461,14 +461,15 @@ export const LENS_DEFINITIONS: LensDefinition[] = [
     phase: 1,
     category: 'core',
     unit: '표고 m',
-    description: '토지피복 대분류(시가화·농업·산림·초지·습지)와 DEM 기복(구릉 ≥300m, 산악 ≥600m)을 결합한 기본 문명 지도입니다.',
-    sourceLabel: '추정 · 합성 표고 모델과 인구밀도 기반 피복 추정 (DEM·토지피복 원자료 미반영)',
+    description: '토지피복 최다 유형(시가화·농업·산림·초지·습지·수역)과 칸 안 DEM 기복(구릉 ≥300m, 산악 ≥600m)을 결합한 기본 문명 지도입니다.',
+    sourceLabel: 'Copernicus DEM GLO-90 · ESA WorldCover 2021 (칸별 집계)',
     legendStops: [
       { color: '#8E8477', label: '시가화' },
       { color: '#97A857', label: '농업' },
       { color: '#396144', label: '산림' },
       { color: '#475559', label: '산악' },
       { color: '#4A7872', label: '습지' },
+      { color: '#235173', label: '수역' },
     ],
   },
   {
