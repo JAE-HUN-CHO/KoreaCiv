@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-27T14:12:31Z",
+  "generatedAt": "2026-11-27T14:16:55Z",
   "geocoder": "OpenStreetMap Nominatim ∪ VWorld (둘 중 하나라도 5km 안이면 성공, 대형 시설은 정식 명칭+유형어 일치 시 30km까지 보정)",
   "checked": 140,
   "succeeded": 116,

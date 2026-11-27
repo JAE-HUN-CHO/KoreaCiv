@@ -25,6 +25,7 @@ from __future__ import annotations
 import csv
 import json
 import os
+import re
 from datetime import datetime, timezone
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -46,12 +47,27 @@ def read_failed(path: str) -> dict[str, dict]:
         return {row["id"]: row for row in csv.DictReader(f)}
 
 
-def wide_radius_match(row: dict | None, match_col: str) -> tuple[bool, str]:
-    """distance_km 기준 WIDE_RADIUS_KM 안이고, 매칭 이름에 공식 유형어가 있으면 보정 성공"""
+def facility_keyword(name: str) -> str:
+    """'다도해해상국립공원' 같은 핵심 이름 추출(괄호 설명 제거, ·/ 앞부분만)
+    — geocode_check.py의 query_variants와 같은 규칙"""
+    base = re.sub(r"\s*\(.*?\)\s*", " ", name).strip()
+    return re.split(r"[·/]", base)[0].strip()
+
+
+def wide_radius_match(row: dict | None, match_col: str, fac_name: str) -> tuple[bool, str]:
+    """distance_km 기준 WIDE_RADIUS_KM 안이고, 매칭 이름에 "그 시설 자체의 이름"과
+    공식 유형어가 함께 있을 때만 보정 성공. 유형어만 있고 다른 시설(예: 근처의
+    아무 박물관)을 집은 경우는 이름이 안 맞아 걸러짐 — 이름만 맞고 유형어가
+    없는 동명 상호·지명도 걸러짐(둘 다 있어야 함)"""
     if not row:
         return False, ""
     match = row.get(match_col, "")
-    if not match or not any(kw in match for kw in DESIGNATION_KEYWORDS):
+    if not match:
+        return False, ""
+    if not any(kw in match for kw in DESIGNATION_KEYWORDS):
+        return False, ""
+    kw = facility_keyword(fac_name)
+    if not kw or kw not in match:
         return False, ""
     try:
         dist = float(row.get("distance_km", ""))
@@ -82,8 +98,8 @@ def main() -> int:
 
         nom_row = nom_failed.get(fac["id"])
         vw_row = vw_failed.get(fac["id"])
-        nom_ok, nom_match = wide_radius_match(nom_row, "nominatim_best_match")
-        vw_ok, vw_match = wide_radius_match(vw_row, "vworld_best_match")
+        nom_ok, nom_match = wide_radius_match(nom_row, "nominatim_best_match", fac["name"])
+        vw_ok, vw_match = wide_radius_match(vw_row, "vworld_best_match", fac["name"])
         if nom_ok or vw_ok:
             t["ok"] += 1
             both_failed_ids.discard(fac["id"])
