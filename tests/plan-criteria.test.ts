@@ -242,3 +242,26 @@ describe('지형 데이터 파일 구조', () => {
     assert.ok(validateHexTerrainFile(badIndex).length > 0, '범위 밖 지형 번호를 못 잡음');
   });
 });
+
+describe('경계 응답 충분성 판정', { skip: !fs.existsSync(SNAPSHOT) && '스냅샷 없음' }, () => {
+  it('시도 경계로 대신 채운 링은 충분성(120개) 판정에 세지 않음', () => {
+    const snap = JSON.parse(fs.readFileSync(SNAPSHOT, 'utf8')) as LiveBootstrapResponse;
+    // 부산 시군구 경계를 빼고, 남은 시군구 링이 119개가 되도록 자름
+    const sigungu = snap.sigunguBoundaries.filter((f) => f.sidoCd !== '21');
+    const trimmed: typeof sigungu = [];
+    let rings = 0;
+    for (const f of sigungu) {
+      const n = f.rings.filter((r) => r.length >= 3).length;
+      if (rings + n > 119) continue;
+      trimmed.push(f);
+      rings += n;
+    }
+    assert.equal(rings, 119, `링 ${rings}개로 맞추지 못함`);
+    const world = rebuildWorldWithLiveApiData({ ...snap, sigunguBoundaries: trimmed });
+    // 부족한 응답이면 내장 격자를 그대로 씀
+    assert.deepEqual(
+      world.hexes.map((h) => h.id),
+      getKoreaCivWorld().hexes.map((h) => h.id)
+    );
+  });
+});

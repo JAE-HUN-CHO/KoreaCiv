@@ -290,7 +290,7 @@ export const HexMapCanvas: React.FC<HexMapCanvasProps> = ({
     return world.facilities.filter((f) => {
       if (f.isWonder && layers.wonders) return true;
       if (f.type === 'power_plant') return layers.powerPlants;
-      // 물류 렌즈에서는 항만·공항 물동량을 물류 지표로 씀 (PLAN.md 9절: 화물 OD 대신)
+      // 물류 렌즈에서는 항만(물동량)·공항(여객)을 함께 표시 (PLAN.md 9절: 화물 OD 대신)
       if (f.type === 'port') return layers.ports || activeLens === 'freight_logistics';
       if (f.type === 'airport') return layers.airports || activeLens === 'freight_logistics';
       if (f.type === 'mine') return layers.mines;

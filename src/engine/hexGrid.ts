@@ -957,6 +957,7 @@ export function rebuildWorldWithLiveApiData(bootstrap: LiveBootstrapResponse): K
   const metroFallbackFeatures = bootstrap.provinceBoundaries
     .map((f) => ({ ...f, sidoCd: f.sidoCd || f.admCd }))
     .filter((f) => METRO_SIDO_TO_CITY_ID[f.sidoCd] && !sidoWithSigungu.has(f.sidoCd));
+  const metroFallbackCityIds = new Set(metroFallbackFeatures.map((f) => METRO_SIDO_TO_CITY_ID[f.sidoCd]));
 
   for (const feat of [...bootstrap.sigunguBoundaries, ...metroFallbackFeatures]) {
     const cityId = resolveSgisCityId(feat.sidoCd, feat.admNm, cityByProvName);
@@ -992,8 +993,11 @@ export function rebuildWorldWithLiveApiData(bootstrap: LiveBootstrapResponse): K
     cityBoundariesByCityId.set(cityId, existingRings);
   }
 
-  // SGIS 공식 경계가 충분히 로드되지 않은 경우 기존 폴리곤 지오메트리 유지하되 통계만 갱신
-  const hasOfficialBoundaries = indexedRings.length >= 120;
+  // SGIS 공식 경계가 충분히 로드되지 않은 경우 기존 폴리곤 지오메트리 유지하되 통계만 갱신.
+  // 시도 경계로 대신 채운 링은 세지 않음: 부족한 응답이 대체 링 덕에 충분해 보이면
+  // 경계 없는 도시가 많은 채로 격자를 다시 만들게 됨
+  const fallbackRingCount = indexedRings.filter((r) => metroFallbackCityIds.has(r.cityId)).length;
+  const hasOfficialBoundaries = indexedRings.length - fallbackRingCount >= 120;
 
   if (!hasOfficialBoundaries) {
     const base = getKoreaCivWorld();

@@ -97,10 +97,17 @@ def nominatim(q: str, cache: dict, last_call: list[float]) -> list[dict]:
     ]
     cache[q] = hits
     # 중간에 끊겨도 이어서 돌릴 수 있게 매번 저장
-    os.makedirs(os.path.dirname(CACHE), exist_ok=True)
-    with open(CACHE, "w", encoding="utf-8") as f:
-        json.dump(cache, f, ensure_ascii=False)
+    save_cache(cache)
     return hits
+
+
+def save_cache(cache: dict) -> None:
+    """임시 파일에 다 쓴 뒤 바꿔 끼움. 저장 중 강제 종료돼도 이전 캐시가 깨지지 않음"""
+    os.makedirs(os.path.dirname(CACHE), exist_ok=True)
+    tmp = CACHE + ".part"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(cache, f, ensure_ascii=False)
+    os.replace(tmp, CACHE)
 
 
 def judge(fac: dict, hits: list[dict]) -> tuple[str, float | None, str]:
@@ -134,12 +141,17 @@ def main() -> int:
         for fac in facilities:
             if fac["type"] in SKIP_TYPES:
                 continue
+            # 변형 검색 중 성공이 하나라도 있으면 성공. 없으면 가장 가까운 불일치 결과를 남기고,
+            # 모든 변형의 결과가 비었을 때만 미검색
             status, dist, matched = "미검색", None, ""
             for q in query_variants(fac["name"]):
                 hits = nominatim(q, cache, last_call)
-                status, dist, matched = judge(fac, hits)
-                if status == "성공":
+                s, d, m = judge(fac, hits)
+                if s == "성공":
+                    status, dist, matched = s, d, m
                     break
+                if s == "불일치" and (dist is None or d < dist):
+                    status, dist, matched = s, d, m
             rows.append(
                 {
                     "id": fac["id"],
@@ -154,9 +166,7 @@ def main() -> int:
             )
             print(f"  {status} {fac['name']}" + ("" if dist is None else f" ({dist:.1f}km)"))
     finally:
-        os.makedirs(os.path.dirname(CACHE), exist_ok=True)
-        with open(CACHE, "w", encoding="utf-8") as f:
-            json.dump(cache, f, ensure_ascii=False)
+        save_cache(cache)
 
     ok = sum(1 for r in rows if r["status"] == "성공")
     by_type: dict[str, dict[str, int]] = {}

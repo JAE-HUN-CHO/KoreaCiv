@@ -736,8 +736,8 @@ export const LENS_DEFINITIONS: LensDefinition[] = [
     phase: 2,
     category: 'infra',
     unit: '백만톤/년',
-    description: '시·군별 화물 물동량 추정치와 항만·공항 물동량을 함께 보여줍니다. 권역 간 화물 OD는 원자료를 확인하지 못해 넣지 않았습니다.',
-    sourceLabel: '시·군 물동량 추정 · 항만·공항 물동량은 해양수산부·공항공사 통계',
+    description: '시·군별 화물 물동량 추정치와 함께 항만 물동량, 공항 위치(여객 수 기준)를 보여줍니다. 공항 값은 화물이 아니라 여객입니다. 권역 간 화물 OD는 원자료를 확인하지 못해 넣지 않았습니다.',
+    sourceLabel: '시·군 물동량 추정 · 항만 물동량 해양수산부 · 공항 여객 공항공사 통계',
     legendStops: [
       { color: '#162333', label: '< 5Mt' },
       { color: '#1F465E', label: '15Mt' },
