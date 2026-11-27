@@ -6,6 +6,8 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
+    // GitHub Pages(프로젝트 페이지)는 /<repo>/ 하위에서 서빙되므로 배포 시 VITE_BASE로 지정
+    base: process.env.VITE_BASE || '/',
     plugins: [
       react(),
       tailwindcss(),
