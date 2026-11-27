@@ -128,26 +128,40 @@ async function vworldGeocode(
   return result;
 }
 
+// HTTP 오류·비정상 응답코드·네트워크 예외는 모두 throw함(= 호출부에서 요청
+// 실패로 집계) — "자료가 진짜 없음"(resultCode는 정상인데 값이 비어 있는
+// 경우)만 null로 반환해, 일시적 API 장애로 기존 연구비 값이 0으로
+// 덮어써지지 않게 함
 async function fetchResearchGrant(schlId: string): Promise<number | null> {
-  try {
-    const params = new URLSearchParams({
-      serviceKey: DATA_GO_KR_KEY,
-      pageNo: '1',
-      numOfRows: '1',
-      schlId,
-      svyYr: '2024',
-    });
-    const resp = await fetch(
-      `https://apis.data.go.kr/B340014/EducationResearchService/getComparisonFullTimeFacultyOutsideOfSchoolForPersonResearchGrant?${params.toString()}`
-    );
-    if (!resp.ok) return null;
-    const xml = await resp.text();
-    if (xml.match(/<resultCode>([^<]*)<\/resultCode>/)?.[1] !== '00') return null;
-    const val = xml.match(/<indctVal1>([^<]*)<\/indctVal1>/)?.[1];
-    return val ? Number(val) : null;
-  } catch {
-    return null;
+  const params = new URLSearchParams({
+    serviceKey: DATA_GO_KR_KEY,
+    pageNo: '1',
+    numOfRows: '1',
+    schlId,
+    svyYr: '2024',
+  });
+  const url = `https://apis.data.go.kr/B340014/EducationResearchService/getComparisonFullTimeFacultyOutsideOfSchoolForPersonResearchGrant?${params.toString()}`;
+
+  // 이 API는 대량 동시 호출 시 간헐적으로 빈 오류 응답을 주는 걸 관찰함
+  // (같은 schlId를 개별로 재호출하면 정상 값이 나오는 경우가 많음) — 바로
+  // 실패로 치지 않고 짧게 쉬었다가 몇 번 재시도함
+  let lastErr: unknown;
+  for (let attempt = 0; attempt < 4; attempt++) {
+    try {
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error(`연구비 API HTTP 오류 (${resp.status})`);
+      const xml = await resp.text();
+      if (xml.match(/<resultCode>([^<]*)<\/resultCode>/)?.[1] !== '00') {
+        throw new Error('연구비 API 응답 코드가 정상이 아님');
+      }
+      const val = xml.match(/<indctVal1>([^<]*)<\/indctVal1>/)?.[1];
+      return val ? Number(val) : null;
+    } catch (e) {
+      lastErr = e;
+      if (attempt < 3) await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
+    }
   }
+  throw lastErr instanceof Error ? lastErr : new Error('연구비 API 재시도 실패');
 }
 
 async function runWithConcurrency<T, R>(items: T[], limit: number, worker: (item: T) => Promise<R>): Promise<R[]> {
@@ -200,22 +214,51 @@ async function main() {
     cache = JSON.parse(fs.readFileSync(CACHE, 'utf-8'));
   }
 
+  // 이 연구비 API는 대량 호출 시 지속적으로(재시도 4번에도) 상당수가 실패하는
+  // 걸 실측함 — 일시적 장애로 보고 전체를 중단하면 사실상 영원히 갱신을 못함.
+  // 그래서 연구비만 실패한 학교는 직전 저장분의 값을 그대로 쓰고(재실행마다
+  // 조금씩이라도 갱신되게), 좌표 자체가 실패한 경우만 전체 중단 대상으로 삼음
+  const previousGrantBySchlId = new Map<string, number | null>();
+  if (fs.existsSync(OUT)) {
+    try {
+      const prev = JSON.parse(fs.readFileSync(OUT, 'utf-8')) as Array<{ id: string; metricValue: number }>;
+      for (const u of prev) {
+        const m = u.id.match(/^univ_schl(.+)$/);
+        if (m) previousGrantBySchlId.set(m[1], u.metricValue > 0 ? u.metricValue : null);
+      }
+    } catch {
+      // 기존 파일을 못 읽어도 치명적이지 않음 — 그냥 직전 값 없이 진행
+    }
+  }
+
   let geocoded = 0;
   let requestFailures = 0;
+  let grantFallbackCount = 0;
   const results = await runWithConcurrency(targets, 5, async (school) => {
+    let point: { lat: number; lon: number } | null = null;
     try {
-      const point = await vworldGeocode(school.schlKrnNm, cache);
-      const grant = await fetchResearchGrant(school.schlId);
-      if (point) geocoded++;
-      return { school, point, grant };
+      point = await vworldGeocode(school.schlKrnNm, cache);
     } catch {
       // 네트워크 오류 등 요청 자체가 실패 — 캐시 안 타므로 재실행하면 다시 시도됨
       requestFailures++;
       return { school, point: null, grant: null };
     }
+    if (point) geocoded++;
+    try {
+      const grant = await fetchResearchGrant(school.schlId);
+      return { school, point, grant };
+    } catch {
+      // 연구비만 실패 — 좌표는 살리고, 직전에 저장해 둔 값이 있으면 그걸 씀
+      // (없으면 "자료 없음"과 똑같이 null. 실패를 전체 중단 사유로 치지 않음)
+      grantFallbackCount++;
+      return { school, point, grant: previousGrantBySchlId.get(school.schlId) ?? null };
+    }
   });
   if (requestFailures > 0) {
     console.log(`요청 실패 ${requestFailures}곳 — 재실행하면 다시 시도됨`);
+  }
+  if (grantFallbackCount > 0) {
+    console.log(`연구비 조회만 실패해 직전 값으로 대체 ${grantFallbackCount}곳`);
   }
 
   console.log(`지오코딩 성공 ${geocoded}/${targets.length}`);
@@ -226,6 +269,8 @@ async function main() {
     .map((r) => {
       const { school, point, grant } = r;
       const p = point!;
+
+      // 전국 최근접 도시(기본값 — znNm 매핑이 없는 경우에만 씀)
       let nearestCity = RAW_CITIES[0];
       let bestDist = Infinity;
       for (const c of RAW_CITIES) {
@@ -235,24 +280,32 @@ async function main() {
           nearestCity = c;
         }
       }
-      // 대학알리미가 알려준 지역(znNm)에 속한 도시 중 가장 가까운 거리로 확인함
+
+      // 대학알리미가 알려준 지역(znNm)에 속한 도시 중 가장 가까운 도시로 검증·배정함
       // (전국에서 가장 가까운 도시가 아님 — 도 경계 근처 캠퍼스는 다른 도의
       // 도시가 전국 최근접일 수 있어서, 예: 서울여자대학교는 구리시 중심이
-      // 서울 시내 어느 구보다 가까움). 이 거리가 너무 멀면(50km 넘으면)
-      // VWorld가 동명의 다른 장소를 집은 것으로 보고 버림(예: 성남 소재
-      // 을지대학교가 "양양"의 동명 건물로 잘못 지오코딩된 사례 — 148km)
+      // 서울 시내 어느 구보다 가까움. nearestCity를 그대로 쓰면 지역 검증은
+      // 통과해도 cityId/province가 구리·경기로 잘못 배정됨). 지역 안에서
+      // 가장 가까운 도시까지의 거리가 너무 멀면(50km 넘으면) VWorld가
+      // 동명의 다른 장소를 집은 것으로 보고 버림(예: 성남 소재 을지대학교가
+      // "양양"의 동명 건물로 잘못 지오코딩된 사례 — 148km)
       const expectedProvinces = ZN_NM_TO_PROVINCES[school.znNm];
       if (expectedProvinces) {
+        let nearestInProvince: (typeof RAW_CITIES)[number] | null = null;
         let distToExpectedProvince = Infinity;
         for (const c of RAW_CITIES) {
           if (!expectedProvinces.includes(c.province)) continue;
           const d = haversineKm(p.lat, p.lon, c.lat, c.lon);
-          if (d < distToExpectedProvince) distToExpectedProvince = d;
+          if (d < distToExpectedProvince) {
+            distToExpectedProvince = d;
+            nearestInProvince = c;
+          }
         }
-        if (distToExpectedProvince > 50) {
+        if (distToExpectedProvince > 50 || !nearestInProvince) {
           regionMismatchCount++;
           return null;
         }
+        nearestCity = nearestInProvince;
       }
       return {
         id: `univ_schl${school.schlId}`,
