@@ -457,7 +457,7 @@ export const LensSidebar: React.FC<LensSidebarProps> = ({
                     : activeLensDef.legendStops;
                 return (
                   <>
-                    <div className="grid grid-cols-5 gap-0.5 overflow-hidden rounded-xs">
+                    <div className="grid gap-0.5 overflow-hidden rounded-xs" style={{ gridTemplateColumns: `repeat(${stops.length}, minmax(0, 1fr))` }}>
                       {stops.map((stop) => (
                         <div
                           key={stop.label}
@@ -466,7 +466,7 @@ export const LensSidebar: React.FC<LensSidebarProps> = ({
                         />
                       ))}
                     </div>
-                    <div className="mt-1 grid grid-cols-5 gap-0.5 text-center">
+                    <div className="mt-1 grid gap-0.5 text-center" style={{ gridTemplateColumns: `repeat(${stops.length}, minmax(0, 1fr))` }}>
                       {stops.map((stop) => (
                         <span
                           key={stop.label}

@@ -48,6 +48,20 @@ export default defineConfig(() => {
         },
       },
     ],
+    build: {
+      rolldownOptions: {
+        output: {
+          // 지형 원자료(약 140KB)와 react 계열 라이브러리를 별도 파일로 분리.
+          // 코드만 바뀌거나 데이터만 바뀔 때 나머지는 브라우저 캐시를 그대로 씀
+          codeSplitting: {
+            groups: [
+              { name: 'terrain-data', test: /src[\\/]data[\\/]generated[\\/]/ },
+              { name: 'vendor', test: /node_modules[\\/](react|react-dom|scheduler)[\\/]/ },
+            ],
+          },
+        },
+      },
+    },
     resolve: {
       alias: {
         '@': path.resolve(import.meta.dirname, '.'),

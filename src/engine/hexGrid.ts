@@ -19,6 +19,7 @@ import {
 } from '../data/koreaGeography';
 import { buildComputedCities, RAW_CITIES } from '../data/koreaCities';
 import { KOREA_FACILITIES } from '../data/koreaFacilities';
+import { classifyReliefByRule, lookupHexTerrain } from '../data/terrainData';
 import type {
   LiveBootstrapResponse,
   LiveBoundaryFeature,
@@ -165,11 +166,29 @@ function getCityIslandGroup(cityId: string): HexTile['islandGroup'] {
   return 'mainland';
 }
 
-function classifyRelief(reliefM: number, elevationM: number): ReliefType {
-  const effectiveRelief = reliefM + (elevationM > 850 ? 220 : elevationM > 520 ? 110 : 0);
-  if (effectiveRelief >= CIV_RULES.relief.mountainThresholdM) return 'mountain';
-  if (effectiveRelief >= CIV_RULES.relief.hillsThresholdM) return 'hills';
-  return 'flat';
+/**
+ * 칸의 표고·기복·토지피복 결정.
+ * 원자료 집계(pipeline/terrain.py)가 있으면 그 값을 쓰고, 없는 칸(DEM 육지 화소가 없는 작은 섬 등)만
+ * 합성 표고 모델(샘플 7점)로 추정함. 기복 판정은 두 경우 모두 PLAN.md 규칙(300m / 600m)
+ */
+function resolveHexTerrain(
+  id: string,
+  sumElev: number,
+  minElev: number,
+  maxElev: number
+): { elevationM: number; reliefM: number; relief: ReliefType; landCoverTerrain?: TerrainType } {
+  const real = lookupHexTerrain(id);
+  if (real) {
+    return {
+      elevationM: real.elevationM,
+      reliefM: real.reliefM,
+      relief: classifyReliefByRule(real.reliefM),
+      landCoverTerrain: real.terrain ?? undefined,
+    };
+  }
+  const elevationM = Math.round(sumElev / SAMPLE_OFFSETS.length);
+  const reliefM = Math.round((maxElev - minElev) * 1.45);
+  return { elevationM, reliefM, relief: classifyReliefByRule(reliefM) };
 }
 
 function classifyTerrain(
@@ -275,7 +294,10 @@ type RawHexSeed = Omit<
   | 'civFood'
   | 'civScience'
   | 'terrain'
->;
+> & {
+  /** 원자료(ESA WorldCover) 토지피복 최다 유형. 없으면 추정 규칙으로 판정 */
+  landCoverTerrain?: TerrainType;
+};
 
 function assembleWorldFromCitiesAndHexes(
   cities: CityComputed[],
@@ -404,7 +426,7 @@ function assembleWorldFromCitiesAndHexes(
       const plainScore = getPlainScore(h.x, h.y);
       const marsh = isMarshZone(h.x, h.y);
 
-      const terrain = classifyTerrain(
+      const terrain = h.landCoverTerrain ?? classifyTerrain(
         popDensity,
         h.elevationM,
         h.relief,
@@ -423,8 +445,10 @@ function assembleWorldFromCitiesAndHexes(
       const scienceScore =
         ictWorkersTile * 0.08 + city.universityRd100M * frac * 0.25 + city.shares.ictScience * 2;
 
+      // landCoverTerrain은 판정용 내부 값이라 결과 칸에는 넣지 않음
+      const { landCoverTerrain: _landCover, ...seed } = h;
       const tile: HexTile = {
-        ...h,
+        ...seed,
         terrain,
         isCoastal,
         population: Math.round(pop),
@@ -670,9 +694,13 @@ export function getKoreaCivWorld(): KoreaCivWorld {
       const landFraction = landHits / SAMPLE_OFFSETS.length;
       if (landFraction < CIV_RULES.grid.minLandFraction || !primaryGroup) continue;
 
-      const elevationM = Math.round(sumElev / SAMPLE_OFFSETS.length);
-      const reliefM = Math.round((maxElev - minElev) * 1.45);
-      const relief = classifyRelief(reliefM, elevationM);
+      const id = `${q},${r}`;
+      const { elevationM, reliefM, relief, landCoverTerrain } = resolveHexTerrain(
+        id,
+        sumElev,
+        minElev,
+        maxElev
+      );
       const { lat, lon } = kmToLatLon(x, y);
 
       let candidates = citiesByGroup.get(primaryGroup);
@@ -697,7 +725,6 @@ export function getKoreaCivWorld(): KoreaCivWorld {
         }
       }
 
-      const id = `${q},${r}`;
       landCoordsSet.add(id);
 
       if (x < minX) minX = x;
@@ -718,6 +745,7 @@ export function getKoreaCivWorld(): KoreaCivWorld {
         elevationM,
         reliefM,
         relief,
+        landCoverTerrain,
         cityId: bestCity.id,
         province: bestCity.province,
       });
@@ -963,6 +991,8 @@ export function rebuildWorldWithLiveApiData(bootstrap: LiveBootstrapResponse): K
       elevationM: h.elevationM,
       reliefM: h.reliefM,
       relief: h.relief,
+      // 원자료 토지피복도 그대로 가져감 (빠뜨리면 추정 규칙으로 다시 판정됨)
+      landCoverTerrain: lookupHexTerrain(h.id)?.terrain ?? undefined,
       cityId: h.cityId,
       province: h.province,
     }));
@@ -1049,13 +1079,15 @@ export function rebuildWorldWithLiveApiData(bootstrap: LiveBootstrapResponse): K
         }
       });
 
-      const elevationM = Math.round(sumElev / SAMPLE_OFFSETS.length);
-      const reliefM = Math.round((maxElev - minElev) * 1.45);
-      const relief = classifyRelief(reliefM, elevationM);
+      const id = `${q},${r}`;
+      const { elevationM, reliefM, relief, landCoverTerrain } = resolveHexTerrain(
+        id,
+        sumElev,
+        minElev,
+        maxElev
+      );
       const { lat, lon } = kmToLatLon(x, y);
       const islandGroup = getCityIslandGroup(bestCityId);
-
-      const id = `${q},${r}`;
       landCoordsSet.add(id);
 
       if (x < minX) minX = x;
@@ -1076,6 +1108,7 @@ export function rebuildWorldWithLiveApiData(bootstrap: LiveBootstrapResponse): K
         elevationM,
         reliefM,
         relief,
+        landCoverTerrain,
         cityId: bestCityId,
         province: bestProv,
       });
