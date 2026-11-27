@@ -98,7 +98,7 @@ export const SourcesModal: React.FC<SourcesModalProps> = ({ stats, onClose }) =>
               <div className="border-b border-[#182738] pb-2">
                 <div className="font-semibold text-[#ECEAE2]">Gold · Production · Science · Faith</div>
                 <p className="mt-0.5 text-[#9BB0C4]">
-                  시군구 GRDP(Gold)·근로소득·제조업(Production)·대학 R&amp;D·대졸 학위(Science)·종교/유산(Faith·Culture)·기대수명·주택가격·화물 물동량을 19개 렌즈로 변환합니다.
+                  시군구 GRDP(Gold)·근로소득·제조업(Production)·대학 R&amp;D·대졸 학위(Science)·종교/유산(Faith·Culture)·기대수명·주택가격·화물 물동량을 20개 렌즈로 변환합니다.
                 </p>
               </div>
               <div className="border-b border-[#182738] pb-2 sm:border-b-0">

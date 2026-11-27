@@ -395,7 +395,7 @@ const PROVINCE_HOUSING_BASE: Record<ProvinceCode, number> = {
 };
 
 /**
- * 공개 규칙(rules.ts)에 따라 모든 161개 도시의 지구(District), 시민 구성, 19개 렌즈 지표, 6대 Civ 산출량 산출
+ * 공개 규칙(rules.ts)에 따라 모든 161개 도시의 지구(District), 시민 구성, 20개 렌즈 지표, 6대 Civ 산출량 산출
  */
 export function buildComputedCities(sourceRaws: CityRawRecord[] = RAW_CITIES): CityComputed[] {
   const totalWorkersSum = sourceRaws.reduce((s, c) => s + c.totalWorkers, 0) || 1;

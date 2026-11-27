@@ -4,7 +4,7 @@
 
 ## 요약
 
-- 화면 기능(지도, 렌즈 19개, City View, Explorer, Wonder, 출처 패널)은 2차 범위까지 구현돼 있습니다.
+- 화면 기능(지도, 렌즈 20개, City View, Explorer, Wonder, 출처 패널)은 2차 범위까지 구현돼 있습니다.
 - 데이터는 PLAN.md 5절 파이프라인(Python, `data/raw/`, `rules.yaml`)으로 만든 것이 아닙니다. TypeScript 파일(`src/data/*.ts`)에 직접 입력된 값과 합성 모델입니다.
 - SGIS·KOSIS 실데이터는 정적 배포 빌드 때 GitHub Actions가 스냅샷으로 받아 지도에 덮어씁니다(`scripts/snapshot-api.ts`).
 - 지형(DEM), 토지피복, 화물 OD는 원자료가 아닌 추정치입니다. 화면과 출처 패널에 "추정"으로 표시했습니다.
