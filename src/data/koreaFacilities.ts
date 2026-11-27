@@ -378,8 +378,8 @@ export const DATA_SOURCES: DataSourceInfo[] = [
     agency: '국토교통부 국가교통DB (KTDB)',
     unit: '14대 간선 화물 흐름 (백만톤/년)',
     refYear: '2023–2024',
-    status: 'active',
-    note: '경부·서해안·반도체·동남권·영동·제주 화물 흐름선 및 화물·물류 렌즈 시각화',
+    status: 'estimated',
+    note: '추정: KTDB 지역 간 화물 OD는 신청 절차·존 단위를 확인하지 못해 원자료를 쓰지 않았습니다. 14대 간선 물동량은 원자료 출처를 확인하지 못한 추정치입니다.',
     url: 'https://www.ktdb.go.kr',
   },
   {
@@ -388,8 +388,8 @@ export const DATA_SOURCES: DataSourceInfo[] = [
     agency: '국토지리정보원',
     unit: '5km 육각 타일 표고·기복 집계',
     refYear: '2024',
-    status: 'active',
-    note: '기복 300m 이상 Hills, 600m 이상 Mountain 자동 판정',
+    status: 'estimated',
+    note: '추정: DEM 원자료 대신 주요 산·평야 좌표로 만든 합성 표고 모델을 씁니다. 기복 300m 이상 Hills, 600m 이상 Mountain에 고지대 보정을 더해 판정합니다.',
     url: 'https://map.ngii.go.kr',
   },
   {
@@ -398,8 +398,8 @@ export const DATA_SOURCES: DataSourceInfo[] = [
     agency: '기후에너지환경부 환경공간정보서비스',
     unit: '7유형 (시가화·농업·산림·초지·습지·나지·수역)',
     refYear: '2023',
-    status: 'active',
-    note: '타일 내 최다 피복 유형을 Civilization 기본 지형으로 변환',
+    status: 'estimated',
+    note: '추정: 토지피복 원자료 대신 인구밀도·표고·농업 비중으로 피복 유형을 추정해 Civilization 기본 지형으로 변환합니다.',
     url: 'https://egis.me.go.kr',
   },
   {
