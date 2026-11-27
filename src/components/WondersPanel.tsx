@@ -21,9 +21,17 @@ export const WondersPanel: React.FC<WondersPanelProps> = ({
       const parks = facilities
         .filter((f) => f.type === 'national_park')
         .sort((a, b) => b.metricValue - a.metricValue);
+      // 신규 318개 대학은 "교원 1인당 연구비"(만원)라 기존 24개 "연간 총 연구비"
+      // (억원)와 단위가 달라 숫자로 바로 비교 불가 — 단위가 같은 것끼리만 모아
+      // 정렬하고, 기존 24개(연간 총액) 그룹을 항상 위에 둠
       const univs = facilities
         .filter((f) => f.type === 'university')
-        .sort((a, b) => b.metricValue - a.metricValue);
+        .sort((a, b) => {
+          if (a.metricUnit !== b.metricUnit) {
+            return a.metricUnit === '억원/년' ? -1 : 1;
+          }
+          return b.metricValue - a.metricValue;
+        });
       const cultural = facilities
         .filter((f) => f.type === 'cultural_site')
         .sort((a, b) => b.metricValue - a.metricValue);

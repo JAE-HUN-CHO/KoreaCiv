@@ -506,9 +506,10 @@ function assembleWorldFromCitiesAndHexes(
     };
   });
 
-  // 대학 연구비 가산
+  // 대학 연구비 가산 — 신규 318개 대학은 "교원 1인당"(만원) 단위라 기존 24개의
+  // "연간 총 연구비"(억원)와 비교 불가. metricUnit으로 걸러 기존 24개만 가산함
   for (const f of facilities) {
-    if (f.type === 'university' && f.hexId) {
+    if (f.type === 'university' && f.hexId && f.metricUnit === '억원/년') {
       const tile = hexMap.get(f.hexId);
       if (tile) {
         tile.scienceScore = Number((tile.scienceScore + f.metricValue * 0.12).toFixed(1));

@@ -119,6 +119,12 @@ python3 pipeline/geocode_check_vworld.py data/raw/facilities.json
 python3 pipeline/geocode_merge_reports.py
 ```
 
+`src/data/generated/universities.json`(기존 24개 외 310개 대학)은 저장소에 커밋돼 있어 평소엔 다시 만들 필요가 없습니다. 대학알리미 공시가 갱신됐을 때만 다시 받습니다(`DATA_GO_KR_SERVICE_KEY`, `VWORLD_API_KEY` 필요, 약 2분).
+
+```bash
+npx tsx pipeline/fetch_universities.ts
+```
+
 ## 폴더 구조
 
 ```
@@ -126,7 +132,10 @@ server.ts                 Express 서버: 화면 서빙 + 공공 API 프록시
 scripts/snapshot-api.ts   정적 배포용 API 스냅샷 수집
 pipeline/terrain.py       DEM·토지피복을 칸별로 집계 (Python)
 pipeline/population.py    격자 인구를 칸별로 집계 (Python)
-pipeline/geocode_check.py 시설 좌표를 Nominatim으로 검증 (Python)
+pipeline/geocode_check.py        시설 좌표를 Nominatim으로 검증 (Python)
+pipeline/geocode_check_vworld.py 시설 좌표를 VWorld로 검증 (Python)
+pipeline/geocode_merge_reports.py Nominatim·VWorld 검증 합산 + 대형 시설 보정
+pipeline/fetch_universities.ts   대학알리미 학교코드로 신규 대학 310곳 지오코딩 (TypeScript)
 data/manifest.json        원자료 출처·생성 시각
 data/geocode_*            시설 좌표 검증 결과
 src/
@@ -135,7 +144,7 @@ src/
   engine/hexGrid.ts       격자 생성, 지형 판정, 통계 배분
   engine/history.ts       역사 렌즈 (센서스 연도별 비교)
   data/                   시·군 통계, 시설, 변환 규칙(rules.ts)
-  data/generated/         파이프라인이 만든 칸별 지형·인구 (hexTerrain.json, hexPopulation.json)
+  data/generated/         파이프라인이 만든 칸별 지형·인구·대학 (hexTerrain.json, hexPopulation.json, universities.json)
   services/publicApis.ts  API 호출 (정적 모드에서는 스냅샷 읽기)
 tests/                    PLAN.md 완료 기준 테스트
 PLAN.md                   기획서

@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-11-27T14:16:55Z",
+  "generatedAt": "2026-11-27T17:06:13Z",
   "geocoder": "OpenStreetMap Nominatim ∪ VWorld (둘 중 하나라도 5km 안이면 성공, 대형 시설은 정식 명칭+유형어 일치 시 30km까지 보정)",
-  "checked": 140,
-  "succeeded": 116,
-  "successRate": 0.8286,
+  "checked": 466,
+  "succeeded": 440,
+  "successRate": 0.9442,
   "wideRadiusRescued": [
     {
       "id": "np_palgongsan",
@@ -12,14 +12,6 @@
       "matchedVia": "vworld",
       "matchedName": "팔공산국립공원",
       "distanceKm": "6.5"
-    },
-    {
-      "id": "np_taean",
-      "name": "태안해안국립공원",
-      "type": "national_park",
-      "matchedVia": "vworld",
-      "matchedName": "태안해안국립공원",
-      "distanceKm": "8.8"
     },
     {
       "id": "np_dadohae",
@@ -55,8 +47,8 @@
       "ok": 23
     },
     "university": {
-      "checked": 24,
-      "ok": 24
+      "checked": 334,
+      "ok": 334
     },
     "cultural_site": {
       "checked": 30,
@@ -67,8 +59,8 @@
       "ok": 14
     },
     "port": {
-      "checked": 12,
-      "ok": 11
+      "checked": 28,
+      "ok": 25
     },
     "airport": {
       "checked": 15,
